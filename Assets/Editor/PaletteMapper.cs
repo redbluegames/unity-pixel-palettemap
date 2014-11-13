@@ -10,19 +10,19 @@ public static class PaletteMapper {
 	{
 		TextureImporter textureImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(sourceTexture)) as TextureImporter;
 		if(!textureImporter.isReadable) {
-			throw new System.ArgumentException("PaletteMapper Error: Source texture must be Read/Write enabled.");
+			throw new System.BadImageFormatException("Source texture must be Read/Write enabled.");
 		}
 		
 		if (sourceTexture.filterMode != FilterMode.Point) {
-			throw new System.ArgumentException ("PaletteMapper Error: Source texture must have Point filter mode.");
+			throw new System.BadImageFormatException ("Source texture must have Point filter mode.");
 		}
 		
 		if (sourceTexture.format != TextureFormat.RGBA32) {
-			throw new System.ArgumentException ("PaletteMapper Error: Source texture must be uncompressed (RGBA32)");
+			throw new System.BadImageFormatException ("Source texture must be uncompressed (RGBA32)");
 		}
 	}
 
-	public static void WritePaletteMapTextureToDisk (string outputPath, Texture2D inTexture, bool overwriteExistingFiles)
+	public static void CreateAndSavePaletteMap (string outputPath, Texture2D inTexture, bool overwriteExistingFiles)
 	{
 		// Create full path to output file
 		string paletteMapSuffix = "_PaletteMap.png";
@@ -32,9 +32,8 @@ public static class PaletteMapper {
 		// Handle file overwriting
 		if(File.Exists(fullPathToOutputFile)) {
 			if(!overwriteExistingFiles) {
-				Debug.LogError("PaletteMap Error: Tried to write " + filename + " but file already exists. " +
-				               "\nFile Path: " + outputPath);
-				return;
+				throw new System.AccessViolationException ("Tried to write " + filename + " but file already exists. " +
+				                                           "\nFile Path: " + outputPath);
 			}
 			Debug.LogWarning("PaletteMap: Overwriting file " + filename);
 		}
@@ -44,27 +43,13 @@ public static class PaletteMapper {
 		
 		// Write the PaletteMap to disk
 		try {
-			byte[] outTextureData = outTexture.EncodeToPNG ();
-			File.WriteAllBytes (fullPathToOutputFile, outTextureData);
-			
-			// Assign correct settings to the file
-			TextureImporter textureImporter = AssetImporter.GetAtPath(fullPathToOutputFile) as TextureImporter; 
-			textureImporter.filterMode = FilterMode.Point;
-			textureImporter.textureFormat = TextureImporterFormat.Alpha8;
-			textureImporter.alphaIsTransparency = true;
-			textureImporter.mipmapEnabled = false;
-			textureImporter.npotScale = TextureImporterNPOTScale.None;
-			
-			// Force Unity to see the file and use the new import settings
-			AssetDatabase.ImportAsset(fullPathToOutputFile); 
-			
-			Debug.Log ("<color=green>Palette Map " + filename + " created successfully</color>");
+			WritePaletteMapFile(fullPathToOutputFile, outTexture);
 		} catch {
 			throw;
 		}
 	}
 	
-	public static Texture2D CreatePaletteMapFromSource(Texture2D sourceTexture)
+	static Texture2D CreatePaletteMapFromSource(Texture2D sourceTexture)
 	{
 		Texture2D outTexture = new Texture2D (sourceTexture.width, sourceTexture.height, TextureFormat.Alpha8, false);
 		outTexture.hideFlags = HideFlags.HideAndDontSave;
@@ -96,5 +81,26 @@ public static class PaletteMapper {
 		outTexture.Apply ();
 		
 		return outTexture;
+	}
+
+	static void WritePaletteMapFile (string fullPath, Texture2D texture)
+	{
+		try {
+			byte[] outTextureData = texture.EncodeToPNG ();
+			File.WriteAllBytes (fullPath, outTextureData);
+		} catch {
+			throw;
+		}
+
+		// Assign correct settings to the file
+		TextureImporter textureImporter = AssetImporter.GetAtPath(fullPath) as TextureImporter; 
+		textureImporter.filterMode = FilterMode.Point;
+		textureImporter.textureFormat = TextureImporterFormat.Alpha8;
+		textureImporter.alphaIsTransparency = true;
+		textureImporter.mipmapEnabled = false;
+		textureImporter.npotScale = TextureImporterNPOTScale.None;
+		
+		// Force Unity to see the file and use the new import settings
+		AssetDatabase.ImportAsset(fullPath); 
 	}
 }
