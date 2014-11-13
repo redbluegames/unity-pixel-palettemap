@@ -70,16 +70,17 @@ Shader "Custom/PaletteSprite"
 			{
 				fixed4 paletteMapColor = tex2D(_MainTex, IN.texcoord) * IN.color;
 				
-				// Break out the UVs from the color at the current textcoord of the palette map
-				float2 paletteUV = paletteMapColor.rg;
+				// The alpha channel of the palette map points to UVs in the palette key.
+				float paletteIndex = paletteMapColor.a;
+				float2 paletteUV = float2(paletteIndex, 0);
 				
-				// Get the color stored at the UV specified in the R and G channels of the palette map
-				fixed4 outColor;
-				outColor.rgb = tex2D(_Palette, paletteUV).rgb;
+				// Get the color from the palette key
+				fixed4 outColor = tex2D(_Palette, paletteUV);
+				
 				// Why do we need to do this? This is in the default shader, and without it, our alpha'ed out areas
 				// are hazy. But why?
-				outColor.rgb *= paletteMapColor.a;
-				outColor.a = paletteMapColor.a;
+				//outColor.rgb *= paletteMapColor.a;
+				//outColor.a = paletteMapColor.a;
 				
 				// Apply the tint to the final color
 				outColor *= _Tint;

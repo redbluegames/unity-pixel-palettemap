@@ -32,13 +32,13 @@ class PaletteMapperWindow : EditorWindow
 				try {
 					string path = GetPathToAsset(inTexture);
 					try {
-						PaletteMapper.CreateAndSavePaletteMap (path, inTexture, overwriteExistingFiles);
+						PaletteMapper.CreatePaletteMapAndKey (path, inTexture, overwriteExistingFiles);
 						
 						Debug.Log ("<color=green>Palette Map and Key for file " + inTexture.name + " created successfully</color>");
 					} catch (System.AccessViolationException e) {
 						Debug.LogError("PaletteMap Error: " + e.Message);
 					} catch (System.Exception e) {
-						Debug.LogError("PaletteMap Error: Encountered file error when trying to write PaletteMap: " 
+						Debug.LogError("PaletteMap Error: Encountered error when trying to write PaletteMap: " 
 						               + e.Message);
 					} 
 				} catch (System.Exception e) {
