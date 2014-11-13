@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections;
+using System.Collections.Generic;
 
-class MyWindow : EditorWindow
+class PaletteMapperWindow : EditorWindow
 {
 	Object inSourceTexture = null;
 	bool overwriteExistingFiles = true;
@@ -10,7 +11,7 @@ class MyWindow : EditorWindow
 	[MenuItem ("RedBlueTools/PaletteMapper")]
 	public static void  ShowWindow ()
 	{
-		EditorWindow.GetWindow (typeof(MyWindow));
+		EditorWindow.GetWindow<PaletteMapperWindow> ("Palette Mapper");
 	}
 	
 	void OnGUI ()
@@ -48,6 +49,11 @@ class MyWindow : EditorWindow
 
 	void ValidateSourceTexture (Texture2D sourceTexture)
 	{
+		TextureImporter textureImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(sourceTexture)) as TextureImporter;
+		if(!textureImporter.isReadable) {
+			throw new System.ArgumentException("PaletteMapper Error: Source texture must be Read/Write enabled.");
+		}
+
 		if (sourceTexture.filterMode != FilterMode.Point) {
 			throw new System.ArgumentException ("PaletteMapper Error: Source texture must have Point filter mode.");
 		}
@@ -86,12 +92,11 @@ class MyWindow : EditorWindow
 		}
 
 		// Create the PaletteMap texture
-		Texture2D outTexture = new Texture2D (inTexture.width, inTexture.height, TextureFormat.Alpha8, false);
-		outTexture.hideFlags = HideFlags.HideAndDontSave;
-		byte[] outTextureData = outTexture.EncodeToPNG ();
+		Texture2D outTexture = CreatePaletteMapFromSource(inTexture);
 
 		// Write the PaletteMap to disk
 		try {
+			byte[] outTextureData = outTexture.EncodeToPNG ();
 			System.IO.File.WriteAllBytes (fullPathToOutputFile, outTextureData);
 
 			// Assign correct settings to the file
@@ -99,6 +104,7 @@ class MyWindow : EditorWindow
 			textureImporter.filterMode = FilterMode.Point;
 			textureImporter.textureFormat = TextureImporterFormat.Alpha8;
 			textureImporter.alphaIsTransparency = true;
+			textureImporter.mipmapEnabled = false;
 			textureImporter.npotScale = TextureImporterNPOTScale.None;
 			
 			// Force Unity to see the file and use the new import settings
@@ -108,5 +114,39 @@ class MyWindow : EditorWindow
 		} catch {
 			throw;
 		}
+	}
+
+	Texture2D CreatePaletteMapFromSource(Texture2D sourceTexture)
+	{
+		Texture2D outTexture = new Texture2D (sourceTexture.width, sourceTexture.height, TextureFormat.Alpha8, false);
+		outTexture.hideFlags = HideFlags.HideAndDontSave;
+
+		Color[] sourcePixels = sourceTexture.GetPixels ();
+		List<Color> uniqueColorsInSource = new List<Color> ();
+
+		// Get all unique colors
+		for(int i = 0; i < sourcePixels.Length; i++) {
+			if(!uniqueColorsInSource.Contains(sourcePixels[i])) {
+				uniqueColorsInSource.Add (sourcePixels[i]);
+			}
+		}
+
+		// Remap original colors to point to indeces in the palette
+		Color[] paletteMapPixels = new Color[sourcePixels.Length];
+		for(int i = 0; i < sourcePixels.Length; i++) {
+			int paletteIndex = uniqueColorsInSource.IndexOf(sourcePixels[i]);
+			float alpha;
+			if(uniqueColorsInSource.Count == 1) {
+				alpha = 0.0f;
+			} else {
+				alpha = paletteIndex / (float)(uniqueColorsInSource.Count - 1);
+			}
+			paletteMapPixels[i] = new Color(0.0f, 0.0f, 0.0f, alpha);
+		}
+
+		outTexture.SetPixels(paletteMapPixels);
+		outTexture.Apply ();
+
+		return outTexture;
 	}
 }
