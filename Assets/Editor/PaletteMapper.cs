@@ -93,8 +93,17 @@ class MyWindow : EditorWindow
 		// Write the PaletteMap to disk
 		try {
 			System.IO.File.WriteAllBytes (fullPathToOutputFile, outTextureData);
-			// Force Unity to see the file and generate a .meta file quickly.
-			AssetDatabase.ImportAsset(fullPathToOutputFile);
+
+			// Assign correct settings to the file
+			TextureImporter textureImporter = AssetImporter.GetAtPath(fullPathToOutputFile) as TextureImporter; 
+			textureImporter.filterMode = FilterMode.Point;
+			textureImporter.textureFormat = TextureImporterFormat.Alpha8;
+			textureImporter.alphaIsTransparency = true;
+			textureImporter.npotScale = TextureImporterNPOTScale.None;
+			
+			// Force Unity to see the file and use the new import settings
+			AssetDatabase.ImportAsset(fullPathToOutputFile); 
+
 			Debug.Log ("<color=green>Palette Map " + filename + " created successfully</color>");
 		} catch {
 			throw;
