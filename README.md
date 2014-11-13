@@ -1,0 +1,2 @@
+pixel-palettemap
+================
