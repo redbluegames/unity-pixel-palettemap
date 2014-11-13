@@ -31,7 +31,12 @@ class MyWindow : EditorWindow
 				ValidateSourceTexture (inTexture);
 				try {
 					string path = GetPathToAsset(inTexture);
-					WritePaletteMapTextureToDisk (path, inTexture);
+					try {
+						WritePaletteMapTextureToDisk (path, inTexture);
+					} catch (System.Exception e) {
+						Debug.LogError("PaletteMap Error: Encountered file error when trying to write PaletteMap: " 
+						               + e.Message);
+					}
 				} catch (System.Exception e) {
 					Debug.LogError (e.Message);
 				}
@@ -91,9 +96,8 @@ class MyWindow : EditorWindow
 			// Force Unity to see the file and generate a .meta file quickly.
 			AssetDatabase.ImportAsset(fullPathToOutputFile);
 			Debug.Log ("<color=green>Palette Map " + filename + " created successfully</color>");
-		} catch (System.Exception e) {
-			throw e;
-			//Debug.LogWarning("PaletteMapper Error: Failed to write palette map file. Reason: " + e.Message);
+		} catch {
+			throw;
 		}
 	}
 }
