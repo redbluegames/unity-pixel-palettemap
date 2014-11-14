@@ -90,6 +90,7 @@ public static class PaletteMapper {
 					colorAtSource.r = 0.0f;
 					colorAtSource.g = 0.0f;
 					colorAtSource.b = 0.0f;
+					colorAtSource.a = 0.0f;
 				}
 				if(!paletteKey.ContainsColor(colorAtSource)) {
 					paletteKey.AddColor (colorAtSource);
@@ -133,7 +134,7 @@ public static class PaletteMapper {
 			TextureImporter textureImporter = AssetImporter.GetAtPath(fullPathToFile) as TextureImporter; 
 			textureImporter.filterMode = FilterMode.Point;
 			textureImporter.textureFormat = TextureImporterFormat.RGBA32;
-			textureImporter.alphaIsTransparency = true;
+			textureImporter.alphaIsTransparency = false;
 			textureImporter.mipmapEnabled = false;
 			textureImporter.npotScale = TextureImporterNPOTScale.None;
 			textureImporter.maxTextureSize = 256;
