@@ -80,6 +80,9 @@ public static class PaletteMapper {
 		} catch {
 			throw;
 		}
+
+		// Force refresh so that we can import it immediately
+		AssetDatabase.ImportAsset(fullPath); 
 		
 		// Assign correct settings to the file
 		TextureImporter textureImporter = AssetImporter.GetAtPath(fullPath) as TextureImporter; 
@@ -161,6 +164,9 @@ public static class PaletteMapper {
 		} catch {
 			throw;
 		}
+
+		// Force refresh so that we can import it immediately
+		AssetDatabase.ImportAsset(fullPath); 
 
 		// Assign correct settings to the file
 		TextureImporter textureImporter = AssetImporter.GetAtPath(fullPath) as TextureImporter; 
