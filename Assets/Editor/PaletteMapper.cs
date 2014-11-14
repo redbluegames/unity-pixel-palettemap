@@ -25,7 +25,7 @@ public static class PaletteMapper {
 	public static void CreatePaletteMapAndKey(string outputPath, Texture2D sourceTexture, bool overwriteExistingFiles)
 	{
 		PaletteKey paletteKey = PaletteKey.CreatePaletteKeyFromTexture(sourceTexture);
-		paletteKey.SortByLumosity ();
+		paletteKey.SortByGrayscale ();
 		PaletteMap palettemap = new PaletteMap(sourceTexture, paletteKey);
 		
 		string paletteKeySuffix = "_PaletteKey.png";
@@ -136,7 +136,7 @@ public static class PaletteMapper {
 			return paletteKey;
 		}
 
-		public void SortByLumosity()
+		public void SortByGrayscale()
 		{
 			colorsInPalette.Sort(CompareColorsByGrayscale);
 		}
