@@ -25,16 +25,17 @@ public static class PaletteMapper {
 	public static void CreatePaletteMapAndKey(string outputPath, Texture2D sourceTexture, bool overwriteExistingFiles)
 	{
 		PaletteKey paletteKey = PaletteKey.CreatePaletteKeyFromTexture(sourceTexture);
+		paletteKey.SortByLumosity ();
 		PaletteMap palettemap = new PaletteMap(sourceTexture, paletteKey);
 		
 		string paletteKeySuffix = "_PaletteKey.png";
-		string filename = sourceTexture.name + paletteKeySuffix;
-		string fullPathToOutputFile = outputPath + filename;
-		paletteKey.WriteToFile(fullPathToOutputFile, overwriteExistingFiles);
+		string paletteKeyFilename = sourceTexture.name + paletteKeySuffix;
+		string fullPathToPaletteKeyFile = outputPath + paletteKeyFilename;
+		paletteKey.WriteToFile(fullPathToPaletteKeyFile, overwriteExistingFiles);
 		
 		string paletteMapSuffix = "_PaletteMap.png";
-		string palettemapfilename = sourceTexture.name + paletteMapSuffix;
-		string fullPathToPaletteMapFile = outputPath + palettemapfilename;
+		string paletteMapFilename = sourceTexture.name + paletteMapSuffix;
+		string fullPathToPaletteMapFile = outputPath + paletteMapFilename;
 		palettemap.WriteToFile(fullPathToPaletteMapFile, overwriteExistingFiles);
 	}
 
@@ -120,12 +121,48 @@ public static class PaletteMapper {
 			
 			// Get all unique colors
 			for(int i = 0; i < sourcePixels.Length; i++) {
-				if(!paletteKey.ContainsColor(sourcePixels[i])) {
-					paletteKey.AddColor (sourcePixels[i]);
+				Color colorAtSource = sourcePixels[i];
+				if(Mathf.Approximately(colorAtSource.a, 0.0f)) {
+					// Only store full alpha in the palette
+					colorAtSource.r = 0.0f;
+					colorAtSource.g = 0.0f;
+					colorAtSource.b = 0.0f;
+				}
+				if(!paletteKey.ContainsColor(colorAtSource)) {
+					paletteKey.AddColor (colorAtSource);
 				}
 			}
 			
 			return paletteKey;
+		}
+
+		public void SortByLumosity()
+		{
+			colorsInPalette.Sort(CompareColorsByGrayscale);
+		}
+
+		// Returns the "smaller" of the two colors by grayscale
+		static int CompareColorsByGrayscale (Color colorA, Color colorB)
+		{
+			// When one is alpha and the other isn't, the alpha'ed color is smaller
+			if(colorA.a < 1.0f && Mathf.Approximately(colorB.a, 1.0f)) {
+				return -1;
+			} else if(colorB.a < 1.0f && Mathf.Approximately(colorA.a, 1.0f)) {
+				return 1;
+			}
+
+			if(colorA.grayscale < colorB.grayscale) {
+				return -1;
+			} else if(colorA.grayscale > colorB.grayscale) {
+				return 1;
+			} else {
+				// Colors are equal - decide ties by alpha (usually happens with black)
+				if(colorA.a < colorB.a) {
+					return -1;
+				} else {
+					return 1;
+				}
+			}
 		}
 	}
 	
