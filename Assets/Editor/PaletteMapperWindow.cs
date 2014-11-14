@@ -25,23 +25,25 @@ class PaletteMapperWindow : EditorWindow
 				Debug.LogError ("PaletteMapper Error: No source texture specified");
 				return;
 			}
-
+			
+			Texture2D inTexture = (Texture2D)inSourceTexture;
 			try {
-				Texture2D inTexture = (Texture2D)inSourceTexture;
 				PaletteMapper.ValidateSourceTexture (inTexture);
-				string path = GetPathToAsset(inTexture);
-				try {
-					PaletteMapper.CreatePaletteMapAndKey (path, inTexture, overwriteExistingFiles);
-					
-					Debug.Log ("<color=green>Palette Map and Key for file " + inTexture.name + " created successfully</color>");
-				} catch (System.AccessViolationException e) {
-					Debug.LogError("PaletteMap Error: " + e.Message);
-				} catch (System.Exception e) {
-					Debug.LogError("PaletteMap Error: Encountered error when trying to write PaletteMap: " 
-					               + e.Message);
-				}
 			} catch (System.BadImageFormatException e) {
 				Debug.LogError ("PaletteMapper Error: " + e.Message);
+				return;
+			}
+			
+			string path = GetPathToAsset(inTexture);
+			try {
+				PaletteMapper.CreatePaletteMapAndKey (path, inTexture, overwriteExistingFiles);
+				
+				Debug.Log ("<color=green>Palette Map and Key for file " + inTexture.name + " created successfully</color>");
+			} catch (System.AccessViolationException e) {
+				Debug.LogError("PaletteMap Error: " + e.Message);
+			} catch (System.Exception e) {
+				Debug.LogError("PaletteMap Error: Encountered error when trying to write PaletteMap: " 
+				               + e.Message);
 			}
 		}
 	}
