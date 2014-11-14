@@ -60,6 +60,10 @@ public static class PaletteMapper {
 		
 		public void AddColor(Color color)
 		{
+			if(colorsInPalette.Count > byte.MaxValue) {
+				throw new System.NotSupportedException("Tried to Add more colors to palette key than are currently" +
+				                                       "supported due to PaletteMap's Alpha8 format.");
+			}
 			colorsInPalette.Add(color);
 		}
 		
@@ -72,6 +76,29 @@ public static class PaletteMapper {
 		{
 			return colorsInPalette.IndexOf(colorInPalette);
 		}
+		
+		public static PaletteKey CreatePaletteKeyFromTexture (Texture2D sourceTexture)
+		{
+			Color[] sourcePixels = sourceTexture.GetPixels ();
+			PaletteKey paletteKey = new PaletteKey();
+			
+			// Get all unique colors
+			for(int i = 0; i < sourcePixels.Length; i++) {
+				Color colorAtSource = sourcePixels[i];
+				if(Mathf.Approximately(colorAtSource.a, 0.0f)) {
+					// Only store full alpha in the palette
+					colorAtSource.r = 0.0f;
+					colorAtSource.g = 0.0f;
+					colorAtSource.b = 0.0f;
+				}
+				if(!paletteKey.ContainsColor(colorAtSource)) {
+					paletteKey.AddColor (colorAtSource);
+				}
+			}
+			
+			return paletteKey;
+		}
+
 		
 		Texture2D CreateAsTexture ()
 		{
@@ -95,8 +122,8 @@ public static class PaletteMapper {
 			try {
 				byte[] outTextureData = keyAsTexture.EncodeToPNG ();
 				File.WriteAllBytes (fullPathToFile, outTextureData);
-			} catch {
-				throw;
+			} catch (System.Exception e) {
+				throw new System.IO.IOException ("Encountered IO exception during PaletteKey write: " + e.Message);
 			}
 			
 			// Force refresh so that we can set its Import settings immediately
@@ -109,31 +136,10 @@ public static class PaletteMapper {
 			textureImporter.alphaIsTransparency = true;
 			textureImporter.mipmapEnabled = false;
 			textureImporter.npotScale = TextureImporterNPOTScale.None;
+			textureImporter.maxTextureSize = 256;
 			
 			// Force Unity to see the file and use the new import settings
 			AssetDatabase.ImportAsset(fullPathToFile); 
-		}
-
-		public static PaletteKey CreatePaletteKeyFromTexture (Texture2D sourceTexture)
-		{
-			Color[] sourcePixels = sourceTexture.GetPixels ();
-			PaletteKey paletteKey = new PaletteKey();
-			
-			// Get all unique colors
-			for(int i = 0; i < sourcePixels.Length; i++) {
-				Color colorAtSource = sourcePixels[i];
-				if(Mathf.Approximately(colorAtSource.a, 0.0f)) {
-					// Only store full alpha in the palette
-					colorAtSource.r = 0.0f;
-					colorAtSource.g = 0.0f;
-					colorAtSource.b = 0.0f;
-				}
-				if(!paletteKey.ContainsColor(colorAtSource)) {
-					paletteKey.AddColor (colorAtSource);
-				}
-			}
-			
-			return paletteKey;
 		}
 
 		public void SortByGrayscale()
@@ -217,8 +223,8 @@ public static class PaletteMapper {
 			try {
 				byte[] outTextureData = texture.EncodeToPNG ();
 				File.WriteAllBytes (fullPath, outTextureData);
-			} catch {
-				throw;
+			} catch (System.Exception e) {
+				throw new System.IO.IOException ("Encountered IO exception during PaletteMap write: " + e.Message);
 			}
 			
 			// Force refresh so that we can set its Import settings immediately
