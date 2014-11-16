@@ -21,11 +21,38 @@ public static class PaletteMapper {
 			throw new System.BadImageFormatException ("Source texture must be uncompressed (RGBA32)");
 		}
 	}
-
+	
+	public static void ValidatePaletteKeyTexture (Texture2D paletteKeyTexture)
+	{
+		TextureImporter textureImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(paletteKeyTexture)) as TextureImporter;
+		if(!textureImporter.isReadable) {
+			throw new System.BadImageFormatException("PaletteKey texture must be Read/Write enabled.");
+		}
+		
+		if (paletteKeyTexture.filterMode != FilterMode.Point) {
+			throw new System.BadImageFormatException ("PaletteKey texture must have Point filter mode.");
+		}
+		
+		if (paletteKeyTexture.format != TextureFormat.RGBA32) {
+			throw new System.BadImageFormatException ("PaletteKey texture must be uncompressed (RGBA32)");
+		}
+	}
+	
 	public static void CreatePaletteMapAndKey(string outputPath, Texture2D sourceTexture, bool overwriteExistingFiles)
 	{
-		PaletteKey paletteKey = PaletteKey.CreatePaletteKeyFromTexture(sourceTexture);
-		paletteKey.SortByGrayscale ();
+		CreatePaletteMapAndKey(outputPath, sourceTexture, null, overwriteExistingFiles);
+	}
+
+	public static void CreatePaletteMapAndKey(string outputPath, Texture2D sourceTexture, Texture2D paletteKeyTexture, bool overwriteExistingFiles)
+	{
+		// If no palette key texture is provided, create a new one from the source image
+		PaletteKey paletteKey;
+		if(paletteKeyTexture == null) {
+			paletteKey = PaletteKey.CreatePaletteKeyFromTexture(sourceTexture);
+			paletteKey.SortByGrayscale ();
+		} else {
+			paletteKey = PaletteKey.CreatePaletteKeyFromTexture(paletteKeyTexture);
+		}
 		PaletteMap palettemap = new PaletteMap(sourceTexture, paletteKey);
 		
 		string paletteKeySuffix = "_PaletteKey.png";
@@ -191,6 +218,9 @@ public static class PaletteMapper {
 			for(int i = 0; i < sourcePixels.Length; i++) {
 				// Get the alpha value by looking it up in the paletteKey
 				int paletteIndex = paletteKey.IndexOf(sourcePixels[i]);
+				if(paletteIndex < 0) {
+					throw new System.ArgumentException ("Encountered color in source PaletteMap image that is not in the PaletteKey.");
+				}
 				float alpha;
 				if(paletteKey.Count == 1) {
 					alpha = 0.0f;

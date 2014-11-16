@@ -4,10 +4,11 @@ using System.Collections;
 
 class PaletteMapperWindow : EditorWindow
 {
-	Object inSourceTexture = null;
+	Object sourceTexture = null;
+	Object suppliedPalleteKey = null;
 	bool overwriteExistingFiles = true;
 
-	[MenuItem ("RedBlueTools/PaletteMapper")]
+	[MenuItem ("RedBlueTools/PaletteMapper/Generator")]
 	public static void  ShowWindow ()
 	{
 		EditorWindow.GetWindow<PaletteMapperWindow> ("Palette Mapper");
@@ -17,29 +18,45 @@ class PaletteMapperWindow : EditorWindow
 	{
 		GUILayout.Label ("Palette Mapper", EditorStyles.boldLabel);
 
-		inSourceTexture = EditorGUILayout.ObjectField ("Texture", inSourceTexture, typeof(Texture2D), false);
+		sourceTexture = EditorGUILayout.ObjectField ("Texture", sourceTexture, typeof(Texture2D), false);
+		suppliedPalleteKey = EditorGUILayout.ObjectField ("Palette Key (Optional)", suppliedPalleteKey, typeof(Texture2D), false);
 		overwriteExistingFiles = EditorGUILayout.Toggle("Overwite Existing files", overwriteExistingFiles);
 
 		if (GUILayout.Button ("Build")) {
-			if (inSourceTexture == null) {
+			if (sourceTexture == null) {
 				Debug.LogError ("PaletteMapper Error: No source texture specified");
 				return;
 			}
-			
-			Texture2D inTexture = (Texture2D)inSourceTexture;
+
+			// Validate source texture
+			Texture2D inTexture = (Texture2D)sourceTexture;
 			try {
 				PaletteMapper.ValidateSourceTexture (inTexture);
 			} catch (System.BadImageFormatException e) {
 				Debug.LogError ("PaletteMapper Error: " + e.Message);
 				return;
 			}
-			
+
+			// Validate or skip Palette Key
+			Texture2D inPaletteKey = null;
+			if(suppliedPalleteKey != null) {
+				inPaletteKey = (Texture2D)suppliedPalleteKey;
+				try {
+					PaletteMapper.ValidatePaletteKeyTexture (inPaletteKey);
+				} catch (System.BadImageFormatException e) {
+					Debug.LogError ("PaletteMapper Error: " + e.Message);
+					return;
+				}
+			}
+
 			string path = GetPathToAsset(inTexture);
 			try {
-				PaletteMapper.CreatePaletteMapAndKey (path, inTexture, overwriteExistingFiles);
+				PaletteMapper.CreatePaletteMapAndKey (path, inTexture, inPaletteKey, overwriteExistingFiles);
 				
 				Debug.Log ("<color=green>Palette Map and Key for file " + inTexture.name + " created successfully</color>");
 			} catch (System.NotSupportedException e) {
+				LogError(e.Message);
+			} catch (System.ArgumentException e) {
 				LogError(e.Message);
 			} catch (System.AccessViolationException e) {
 				LogError(e.Message);
