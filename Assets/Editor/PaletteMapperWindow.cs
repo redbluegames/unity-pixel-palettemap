@@ -49,6 +49,20 @@ class PaletteMapperWindow : EditorWindow
 				LogError("Encountered unknown error: " + e.Message);
 			}
 		}
+
+		if (GUILayout.Button("Megan")) {
+			int sideSize = 2408;
+			Texture2D hugeTexture = new Texture2D(sideSize, sideSize, TextureFormat.RGBA32, false);
+			hugeTexture.hideFlags = HideFlags.HideAndDontSave;
+			Color[] lotsOfColors = new Color[sideSize * sideSize];
+			for(int i = 0; i < lotsOfColors.Length; i++) {
+				int r = i % 255;
+				lotsOfColors[i] = new Color(r / 255.0f, 0.0f, 0.0f);
+			}
+			hugeTexture.SetPixels (lotsOfColors);
+			byte[] bytes = hugeTexture.EncodeToPNG();
+			System.IO.File.WriteAllBytes(GetPathToAsset(inSourceTexture) + "Test_BigTexture.PNG", bytes);
+		}
 	}
 
 	void LogError (string message)
