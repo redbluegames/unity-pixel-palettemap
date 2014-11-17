@@ -1,21 +1,19 @@
-// Unlit alpha-blended shader.
+// Unlit alpha-cutout shader.
 // - no lighting
 // - no lightmap support
 // - no per-material color
 
-Shader "RBTools/Palettized Image/Palette Texture (UnlitTransparent)" {
+Shader "Unlit/Transparent Cutout" {
 Properties {
 	_MainTex ("Base (RGB) Trans (A)", 2D) = "white" {}
-	_Palette ("Palette Texture", 2D) = "white" {}
+	_Cutoff ("Alpha cutoff", Range(0,1)) = 0.5
 }
-
 SubShader {
-	Tags {"Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent"}
+	Tags {"Queue"="AlphaTest" "IgnoreProjector"="True" "RenderType"="TransparentCutout"}
 	LOD 100
-	
-	ZWrite Off
-	Blend SrcAlpha OneMinusSrcAlpha 
-	
+
+	Lighting Off
+
 	Pass {  
 		CGPROGRAM
 			#pragma vertex vert
@@ -35,8 +33,8 @@ SubShader {
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
-			sampler2D _Palette;
-			
+			fixed _Cutoff;
+
 			v2f vert (appdata_t v)
 			{
 				v2f o;
@@ -47,20 +45,12 @@ SubShader {
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				fixed4 paletteMapColor = tex2D(_MainTex, i.texcoord);
-				
-				// The alpha channel of the palette map points to UVs in the palette key.
-				float paletteIndex = paletteMapColor.a;
-				float2 paletteUV = float2(paletteIndex, 0);
-				
-				// Get the color from the palette key
-				fixed4 outColor = tex2D(_Palette, paletteUV);
-				
-				return outColor;
+				fixed4 col = tex2D(_MainTex, i.texcoord);
+				clip(col.a - _Cutoff);
+				return col;
 			}
 		ENDCG
 	}
 }
 
 }
-

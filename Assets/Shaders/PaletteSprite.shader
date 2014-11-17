@@ -1,4 +1,4 @@
-Shader "Custom/PaletteSprite"
+Shader "RBTools/Palettized Image/Palette Sprite"
 {
 	Properties
 	{
@@ -76,11 +76,6 @@ Shader "Custom/PaletteSprite"
 				
 				// Get the color from the palette key
 				fixed4 outColor = tex2D(_Palette, paletteUV);
-				
-				// Why do we need to do this? This is in the default shader, and without it, our alpha'ed out areas
-				// are hazy. But why?
-				//outColor.rgb *= paletteMapColor.a;
-				//outColor.a = paletteMapColor.a;
 				
 				// Apply the tint to the final color
 				outColor *= _Tint;
