@@ -1,3 +1,4 @@
+// Default Sprite Shader combined with an indexed color texture (Palette)
 Shader "RBTools/Palettized Image/Palette Sprite"
 {
 	Properties

@@ -1,4 +1,4 @@
-// Unlit alpha-blended shader.
+// Unlit alpha-blended shader, combined with a color index (palette) texture.
 // - no lighting
 // - no lightmap support
 // - no per-material color
