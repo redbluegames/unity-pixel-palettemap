@@ -1,5 +1,4 @@
 ﻿/*****************************************************************************
- *  MaterialTween is a RedBlueTool used to swap between materials on a gameobject.
  *  Copyright (C) 2014 Red Blue Games, LLC
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -20,6 +19,9 @@ using System.Collections;
 
 namespace RedBlueTools
 {
+	/// <summary>
+	/// MaterialTween is a RedBlueTool used to swap between materials on a gameobject.
+	/// </summary>
 	public class MaterialTween : MonoBehaviour
 	{
 	
@@ -62,6 +64,7 @@ namespace RedBlueTools
 		void Update ()
 		{
 			timeUntilSwap -= Time.deltaTime;
+			// Every swap interval, go to the next Material
 			if (timeUntilSwap <= 0.0f) {
 				IncrementMaterial ();
 				// Reset timer

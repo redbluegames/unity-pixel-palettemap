@@ -14,43 +14,34 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
+
 using UnityEngine;
 using System.Collections;
 
 namespace RedBlueTools
 {
 	/// <summary>
-	/// SetTextureVariableExample is simply an example of how to set a shader variable from script.
+	/// PaletteScroll scrolls a Material's PaletteY offset at a specified rate during Update.
 	/// </summary>
-	public class SetTextureVariableExample : MonoBehaviour
+	public class PaletteScroll : MonoBehaviour
 	{
 
-		public Texture[] palettes;
-		public int currentIndex = 0;
-		string paletteVariable = "_Palette";
-
-		void OnEnable ()
-		{
-			if (palettes.Length == 0) {
-				Debug.LogError ("No Palette textures assigned to GameObject: " + gameObject.name);
-				enabled = false;
-			}
-		}
+		string paletteVariable = "_PaletteY";
+		public float scrollRate;
 
 		void Update ()
 		{
-			if (currentIndex > palettes.Length || currentIndex < 0) {
-				Debug.LogError ("Tried to set palette index beyond the number of supplied Palettes.");
-				currentIndex = 0;
-			}
+			float deltaY = scrollRate * Time.deltaTime;
+			float currentPaletteY = renderer.material.GetFloat (paletteVariable);
+			float newPaletteY = (currentPaletteY + deltaY) % 1.0f;
 
-			// Set the palette for the given material.
-			renderer.material.SetTexture (paletteVariable, palettes [currentIndex]);
+			// Set the paletteY for the given material.
+			renderer.material.SetFloat (paletteVariable, newPaletteY);
 
 			// This would change the palette for all objects using this material. Careful with this,
 			// since changes will persist across Play mode.
-			//renderer.sharedMaterial.SetTexture(paletteVariable, palettes[currentIndex]);
-
+			//renderer.sharedMaterial.SetFloat(paletteVariable, newPaletteY);
 		}
 	}
+
 }
