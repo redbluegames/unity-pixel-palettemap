@@ -7,6 +7,14 @@ class PaletteMapperWindow : EditorWindow
 	Object sourceTexture = null;
 	Object suppliedPalleteKey = null;
 	bool overwriteExistingFiles = true;
+	bool sortPalette = false;
+	PaletteKeyOption paletteKeyOption;
+
+	enum PaletteKeyOption
+	{
+		GeneratePaletteKey,
+		UseCustomPaletteKey
+	}
 
 	[MenuItem ("RedBlueTools/PaletteMapper/Generator")]
 	public static void  ShowWindow ()
@@ -16,11 +24,25 @@ class PaletteMapperWindow : EditorWindow
 	
 	void OnGUI ()
 	{
-		GUILayout.Label ("Palette Mapper", EditorStyles.boldLabel);
+		GUILayout.Label ("Source", EditorStyles.boldLabel);
+		sourceTexture = EditorGUILayout.ObjectField ("Source Texture", sourceTexture, typeof(Texture2D), false);
+		GUILayout.Label ("Palette Key", EditorStyles.boldLabel);
+		paletteKeyOption = (PaletteKeyOption) EditorGUILayout.EnumPopup("Palette Key Generation: ", paletteKeyOption);
+		switch(paletteKeyOption) 
+		{
+		case PaletteKeyOption.GeneratePaletteKey :
+			suppliedPalleteKey = null;
+			sortPalette = EditorGUILayout.Toggle("Sort PaletteKey", sortPalette);
+			break;
+		case PaletteKeyOption.UseCustomPaletteKey :
+			suppliedPalleteKey = EditorGUILayout.ObjectField ("Palette Key", suppliedPalleteKey, typeof(Texture2D), false);
+			sortPalette = false;
+			break;
+		}
 
-		sourceTexture = EditorGUILayout.ObjectField ("Texture", sourceTexture, typeof(Texture2D), false);
-		suppliedPalleteKey = EditorGUILayout.ObjectField ("Palette Key (Optional)", suppliedPalleteKey, typeof(Texture2D), false);
+		GUILayout.Label ("Options", EditorStyles.boldLabel);
 		overwriteExistingFiles = EditorGUILayout.Toggle("Overwite Existing files", overwriteExistingFiles);
+
 
 		if (GUILayout.Button ("Build")) {
 			if (sourceTexture == null) {
@@ -39,7 +61,12 @@ class PaletteMapperWindow : EditorWindow
 
 			// Validate or skip Palette Key
 			Texture2D inPaletteKey = null;
-			if(suppliedPalleteKey != null) {
+			if(paletteKeyOption == PaletteKeyOption.UseCustomPaletteKey) {
+				if(suppliedPalleteKey == null) {
+					Debug.LogError("PaletteMapper Error: Trying to use custom palette key but no palette key specified." +
+					               "\nPlease select a texture to use as the Palette Key.");
+					return;
+				}
 				inPaletteKey = (Texture2D)suppliedPalleteKey;
 				try {
 					PaletteMapper.ValidatePaletteKeyTexture (inPaletteKey);
@@ -51,7 +78,7 @@ class PaletteMapperWindow : EditorWindow
 
 			string path = GetPathToAsset(inTexture);
 			try {
-				PaletteMapper.CreatePaletteMapAndKey (path, inTexture, inPaletteKey, overwriteExistingFiles);
+				PaletteMapper.CreatePaletteMapAndKey (path, inTexture, inPaletteKey, sortPalette, overwriteExistingFiles);
 				
 				Debug.Log ("<color=green>Palette Map and Key for file " + inTexture.name + " created successfully</color>");
 			} catch (System.NotSupportedException e) {

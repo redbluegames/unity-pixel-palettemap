@@ -37,19 +37,16 @@ public static class PaletteMapper {
 			throw new System.BadImageFormatException ("PaletteKey texture must be uncompressed (RGBA32)");
 		}
 	}
-	
-	public static void CreatePaletteMapAndKey(string outputPath, Texture2D sourceTexture, bool overwriteExistingFiles)
-	{
-		CreatePaletteMapAndKey(outputPath, sourceTexture, null, overwriteExistingFiles);
-	}
 
-	public static void CreatePaletteMapAndKey(string outputPath, Texture2D sourceTexture, Texture2D paletteKeyTexture, bool overwriteExistingFiles)
+	public static void CreatePaletteMapAndKey(string outputPath, Texture2D sourceTexture, Texture2D paletteKeyTexture, bool sortPaletteKey, bool overwriteExistingFiles)
 	{
 		// If no palette key texture is provided, create a new one from the source image
 		PaletteKey paletteKey;
 		if(paletteKeyTexture == null) {
 			paletteKey = PaletteKey.CreatePaletteKeyFromTexture(sourceTexture);
-			paletteKey.SortByGrayscale ();
+			if(sortPaletteKey) {
+				paletteKey.SortByGrayscale ();
+			}
 		} else {
 			paletteKey = PaletteKey.CreatePaletteKeyFromTexture(paletteKeyTexture);
 		}
