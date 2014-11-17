@@ -98,7 +98,21 @@ public static class PaletteMapper {
 
 		public int IndexOf(Color colorInPalette)
 		{
-			return colorsInPalette.IndexOf(colorInPalette);
+			Color colorToLookup = ClearRGBIfNoAlpha(colorInPalette);
+			return colorsInPalette.IndexOf(colorToLookup);
+		}
+
+		static Color ClearRGBIfNoAlpha(Color colorToClear)
+		{
+			Color clearedColor = colorToClear;
+			if(Mathf.Approximately(clearedColor.a, 0.0f)) {
+				// Only store full alpha in the palette
+				clearedColor.r = 0.0f;
+				clearedColor.g = 0.0f;
+				clearedColor.b = 0.0f;
+				clearedColor.a = 0.0f;
+			}
+			return clearedColor;
 		}
 		
 		public static PaletteKey CreatePaletteKeyFromTexture (Texture2D sourceTexture)
@@ -108,14 +122,7 @@ public static class PaletteMapper {
 			
 			// Get all unique colors
 			for(int i = 0; i < sourcePixels.Length; i++) {
-				Color colorAtSource = sourcePixels[i];
-				if(Mathf.Approximately(colorAtSource.a, 0.0f)) {
-					// Only store full alpha in the palette
-					colorAtSource.r = 0.0f;
-					colorAtSource.g = 0.0f;
-					colorAtSource.b = 0.0f;
-					colorAtSource.a = 0.0f;
-				}
+				Color colorAtSource = ClearRGBIfNoAlpha(sourcePixels[i]);
 				if(!paletteKey.ContainsColor(colorAtSource)) {
 					paletteKey.AddColor (colorAtSource);
 				}
@@ -216,7 +223,8 @@ public static class PaletteMapper {
 				// Get the alpha value by looking it up in the paletteKey
 				int paletteIndex = paletteKey.IndexOf(sourcePixels[i]);
 				if(paletteIndex < 0) {
-					throw new System.ArgumentException ("Encountered color in source PaletteMap image that is not in the PaletteKey.");
+					throw new System.ArgumentException ("Encountered color in source PaletteMap image that is not in the PaletteKey." +
+					                                    "Color in PaletteMap: " + (Color32)sourcePixels[i]);
 				}
 				float alpha;
 				if(paletteKey.Count == 1) {
