@@ -283,14 +283,15 @@ public static class PaletteMapper {
 			
 			// Force refresh so that we can set its Import settings immediately
 			AssetDatabase.ImportAsset(fullPath); 
-			
+
 			// Assign correct settings to the file
 			TextureImporter textureImporter = AssetImporter.GetAtPath(fullPath) as TextureImporter; 
-			textureImporter.filterMode = FilterMode.Point;
-			textureImporter.textureFormat = TextureImporterFormat.Alpha8;
+			textureImporter.textureType = TextureImporterType.Advanced;
+			textureImporter.npotScale = TextureImporterNPOTScale.None;
 			textureImporter.alphaIsTransparency = false;
 			textureImporter.mipmapEnabled = false;
-			textureImporter.npotScale = TextureImporterNPOTScale.None;
+			textureImporter.filterMode = FilterMode.Point;
+			textureImporter.textureFormat = TextureImporterFormat.Alpha8;
 			
 			// Force Unity to see the file and use the new import settings
 			AssetDatabase.ImportAsset(fullPath);
