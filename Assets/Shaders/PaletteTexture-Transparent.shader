@@ -7,6 +7,7 @@ Shader "RBTools/Palettized Image/Palette Texture (UnlitTransparent)" {
 Properties {
 	_MainTex ("Base (RGB) Trans (A)", 2D) = "white" {}
 	_Palette ("Palette Texture", 2D) = "white" {}
+	_PaletteY ("PaletteY", Float) = 0
 }
 
 SubShader {
@@ -45,13 +46,15 @@ SubShader {
 				return o;
 			}
 			
+			float _PaletteY;
+			
 			fixed4 frag (v2f i) : SV_Target
 			{
 				fixed4 paletteMapColor = tex2D(_MainTex, i.texcoord);
 				
 				// The alpha channel of the palette map points to UVs in the palette key.
-				float paletteIndex = paletteMapColor.a;
-				float2 paletteUV = float2(paletteIndex, 0);
+				float paletteX = paletteMapColor.a;
+				float2 paletteUV = float2(paletteX, _PaletteY);
 				
 				// Get the color from the palette key
 				fixed4 outColor = tex2D(_Palette, paletteUV);

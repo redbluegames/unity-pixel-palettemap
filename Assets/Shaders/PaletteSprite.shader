@@ -7,6 +7,7 @@ Shader "RBTools/Palettized Image/Palette Sprite"
 		_Palette ("Palette Texture", 2D) = "white" {}
 		_Tint ("Tint", Color) = (1,1,1,1)
 		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
+		_PaletteY ("PaletteY", Float) = 0
 	}
 
 	SubShader
@@ -66,14 +67,15 @@ Shader "RBTools/Palettized Image/Palette Sprite"
 
 			sampler2D _MainTex;
 			sampler2D _Palette;
+			float _PaletteY;
 
 			fixed4 frag(v2f IN) : SV_Target
 			{
 				fixed4 paletteMapColor = tex2D(_MainTex, IN.texcoord) * IN.color;
 				
 				// The alpha channel of the palette map points to UVs in the palette key.
-				float paletteIndex = paletteMapColor.a;
-				float2 paletteUV = float2(paletteIndex, 0);
+				float paletteX = paletteMapColor.a;
+				float2 paletteUV = float2(paletteX, _PaletteY);
 				
 				// Get the color from the palette key
 				fixed4 outColor = tex2D(_Palette, paletteUV);
