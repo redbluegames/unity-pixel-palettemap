@@ -1,4 +1,22 @@
-﻿using UnityEngine;
+﻿/*****************************************************************************
+ *  Palette Mapper is a Red Blue Tool used to create indexed color images from
+ *  source images.
+ *  Copyright (C) 2014 Red Blue Games, LLC
+ *  
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ****************************************************************************/
+using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Collections;
@@ -50,13 +68,17 @@ public static class PaletteMapper {
 		} else {
 			paletteKey = PaletteKey.CreatePaletteKeyFromTexture(paletteKeyTexture);
 		}
+
+		// Create the palette map from the palette key
 		PaletteMap palettemap = new PaletteMap(sourceTexture, paletteKey);
-		
+
+		// Write PaletteKey to disk
 		string paletteKeySuffix = "_PaletteKey.png";
 		string paletteKeyFilename = sourceTexture.name + paletteKeySuffix;
 		string fullPathToPaletteKeyFile = outputPath + paletteKeyFilename;
 		paletteKey.WriteToFile(fullPathToPaletteKeyFile, overwriteExistingFiles);
 		
+		// Write PaletteMap to disk
 		string paletteMapSuffix = "_PaletteMap.png";
 		string paletteMapFilename = sourceTexture.name + paletteMapSuffix;
 		string fullPathToPaletteMapFile = outputPath + paletteMapFilename;
@@ -101,19 +123,6 @@ public static class PaletteMapper {
 			Color colorToLookup = ClearRGBIfNoAlpha(colorInPalette);
 			return colorsInPalette.IndexOf(colorToLookup);
 		}
-
-		static Color ClearRGBIfNoAlpha(Color colorToClear)
-		{
-			Color clearedColor = colorToClear;
-			if(Mathf.Approximately(clearedColor.a, 0.0f)) {
-				// Only store full alpha in the palette
-				clearedColor.r = 0.0f;
-				clearedColor.g = 0.0f;
-				clearedColor.b = 0.0f;
-				clearedColor.a = 0.0f;
-			}
-			return clearedColor;
-		}
 		
 		public static PaletteKey CreatePaletteKeyFromTexture (Texture2D sourceTexture)
 		{
@@ -131,6 +140,15 @@ public static class PaletteMapper {
 			return paletteKey;
 		}
 
+		// Clears out the RGB when fully transparent so that we don't get lots of versions of transparent in the palette
+		static Color ClearRGBIfNoAlpha(Color colorToClear)
+		{
+			Color clearedColor = colorToClear;
+			if(Mathf.Approximately(clearedColor.a, 0.0f)) {
+				clearedColor = Color.clear;
+			}
+			return clearedColor;
+		}
 		
 		Texture2D CreateAsTexture ()
 		{
