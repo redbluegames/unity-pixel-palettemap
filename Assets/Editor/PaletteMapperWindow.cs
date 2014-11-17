@@ -12,11 +12,11 @@ class PaletteMapperWindow : EditorWindow
 
 	enum PaletteKeyOption
 	{
-		GeneratePaletteKey,
-		UseCustomPaletteKey
+		GenerateNewPaletteKey,
+		SupplyCustomPaletteKey
 	}
 
-	[MenuItem ("RedBlueTools/PaletteMapper/Generator")]
+	[MenuItem ("RedBlueTools/Palette Mapper")]
 	public static void  ShowWindow ()
 	{
 		EditorWindow.GetWindow<PaletteMapperWindow> ("Palette Mapper");
@@ -24,18 +24,18 @@ class PaletteMapperWindow : EditorWindow
 	
 	void OnGUI ()
 	{
-		GUILayout.Label ("Source", EditorStyles.boldLabel);
+		GUILayout.Label ("Palette Map", EditorStyles.boldLabel);
 		sourceTexture = EditorGUILayout.ObjectField ("Source Texture", sourceTexture, typeof(Texture2D), false);
 		GUILayout.Label ("Palette Key", EditorStyles.boldLabel);
-		paletteKeyOption = (PaletteKeyOption) EditorGUILayout.EnumPopup("Palette Key Generation: ", paletteKeyOption);
+		paletteKeyOption = (PaletteKeyOption) EditorGUILayout.EnumPopup("Palette Key Creation: ", paletteKeyOption);
 		switch(paletteKeyOption) 
 		{
-		case PaletteKeyOption.GeneratePaletteKey :
+		case PaletteKeyOption.GenerateNewPaletteKey :
 			suppliedPalleteKey = null;
 			sortPalette = EditorGUILayout.Toggle("Sort PaletteKey", sortPalette);
 			break;
-		case PaletteKeyOption.UseCustomPaletteKey :
-			suppliedPalleteKey = EditorGUILayout.ObjectField ("Palette Key", suppliedPalleteKey, typeof(Texture2D), false);
+		case PaletteKeyOption.SupplyCustomPaletteKey :
+			suppliedPalleteKey = EditorGUILayout.ObjectField ("Palette Key Texture", suppliedPalleteKey, typeof(Texture2D), false);
 			sortPalette = false;
 			break;
 		}
@@ -61,7 +61,7 @@ class PaletteMapperWindow : EditorWindow
 
 			// Validate or skip Palette Key
 			Texture2D inPaletteKey = null;
-			if(paletteKeyOption == PaletteKeyOption.UseCustomPaletteKey) {
+			if(paletteKeyOption == PaletteKeyOption.SupplyCustomPaletteKey) {
 				if(suppliedPalleteKey == null) {
 					Debug.LogError("PaletteMapper Error: Trying to use custom palette key but no palette key specified." +
 					               "\nPlease select a texture to use as the Palette Key.");
