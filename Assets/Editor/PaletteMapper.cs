@@ -59,7 +59,8 @@ namespace RedBlueTools
 			}
 		}
 
-		public static void CreatePaletteMapAndKey (string outputPath, Texture2D sourceTexture, Texture2D paletteKeyTexture, bool sortPaletteKey, bool overwriteExistingFiles)
+		public static void CreatePaletteMapAndKey (string outputPath, Texture2D sourceTexture, Texture2D paletteKeyTexture, 
+		                                           bool sortPaletteKey, bool overwriteExistingFiles, string paletteKeyFileName, string paletteMapFilename)
 		{
 			// If no palette key texture is provided, create a new one from the source image
 			PaletteKey paletteKey;
@@ -76,15 +77,13 @@ namespace RedBlueTools
 			PaletteMap palettemap = new PaletteMap (sourceTexture, paletteKey);
 
 			// Write PaletteKey to disk
-			string paletteKeySuffix = "_PaletteKey.png";
-			string paletteKeyFilename = sourceTexture.name + paletteKeySuffix;
-			string fullPathToPaletteKeyFile = outputPath + paletteKeyFilename;
+			string paletteKeyFilenameWithExtension = paletteKeyFileName + ".png";
+			string fullPathToPaletteKeyFile = outputPath + paletteKeyFilenameWithExtension;
 			paletteKey.WriteToFile (fullPathToPaletteKeyFile, overwriteExistingFiles);
 		
 			// Write PaletteMap to disk
-			string paletteMapSuffix = "_PaletteMap.png";
-			string paletteMapFilename = sourceTexture.name + paletteMapSuffix;
-			string fullPathToPaletteMapFile = outputPath + paletteMapFilename;
+			string paletteMapFilenameWithExtension = paletteMapFilename + ".png";
+			string fullPathToPaletteMapFile = outputPath + paletteMapFilenameWithExtension;
 			palettemap.WriteToFile (fullPathToPaletteMapFile, overwriteExistingFiles);
 		}
 
@@ -112,7 +111,7 @@ namespace RedBlueTools
 			{
 				if (colorsInPalette.Count > byte.MaxValue) {
 					throw new System.NotSupportedException ("Tried to Add more colors to palette key than are currently" +
-						"supported due to PaletteMap's Alpha8 format.");
+						" supported due to PaletteMap's Alpha8 format.");
 				}
 				colorsInPalette.Add (color);
 			}
@@ -184,7 +183,10 @@ namespace RedBlueTools
 				AssetDatabase.ImportAsset (fullPathToFile); 
 			
 				// Assign correct settings to the file
-				TextureImporter textureImporter = AssetImporter.GetAtPath (fullPathToFile) as TextureImporter; 
+				TextureImporter textureImporter = AssetImporter.GetAtPath (fullPathToFile) as TextureImporter;
+				if(textureImporter == null) {
+					throw new System.NullReferenceException ("Failed to import file at specified path: " + fullPathToFile);
+				}
 				textureImporter.filterMode = FilterMode.Point;
 				textureImporter.textureFormat = TextureImporterFormat.RGBA32;
 				textureImporter.alphaIsTransparency = false;
@@ -289,7 +291,10 @@ namespace RedBlueTools
 				AssetDatabase.ImportAsset (fullPath); 
 
 				// Assign correct settings to the file
-				TextureImporter textureImporter = AssetImporter.GetAtPath (fullPath) as TextureImporter; 
+				TextureImporter textureImporter = AssetImporter.GetAtPath (fullPath) as TextureImporter;
+				if(textureImporter == null) {
+					throw new System.NullReferenceException ("Failed to import file at specified path: " + fullPath);
+				}
 				textureImporter.textureType = TextureImporterType.Advanced;
 				textureImporter.npotScale = TextureImporterNPOTScale.None;
 				textureImporter.alphaIsTransparency = false;

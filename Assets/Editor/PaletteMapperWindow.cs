@@ -25,6 +25,8 @@ namespace RedBlueTools
 	class PaletteMapperWindow : EditorWindow
 	{
 		Object sourceTexture = null;
+		string paletteKeyFilename;
+		string paletteMapFilename;
 		Object suppliedPalleteKey = null;
 		bool overwriteExistingFiles = true;
 		bool sortPalette = false;
@@ -46,6 +48,10 @@ namespace RedBlueTools
 		{
 			GUILayout.Label ("Palette Map", EditorStyles.boldLabel);
 			sourceTexture = EditorGUILayout.ObjectField ("Source Texture", sourceTexture, typeof(Texture2D), false);
+			if(sourceTexture != null) {
+				paletteMapFilename = sourceTexture.name + "_PaletteMap";
+				paletteMapFilename = EditorGUILayout.TextField("Output Filename", paletteMapFilename);
+			}
 
 			GUILayout.Label ("Palette Key", EditorStyles.boldLabel);
 			paletteKeyOption = (PaletteKeyOption)EditorGUILayout.EnumPopup ("Palette Key Creation: ", paletteKeyOption);
@@ -58,6 +64,10 @@ namespace RedBlueTools
 				suppliedPalleteKey = EditorGUILayout.ObjectField ("Palette Key Texture", suppliedPalleteKey, typeof(Texture2D), false);
 				sortPalette = false;
 				break;
+			}
+			if(sourceTexture != null) {
+				paletteKeyFilename = sourceTexture.name + "_PaletteKey";
+				paletteKeyFilename = EditorGUILayout.TextField("Output Filename", paletteKeyFilename);
 			}
 
 			GUILayout.Label ("Options", EditorStyles.boldLabel);
@@ -97,7 +107,7 @@ namespace RedBlueTools
 
 				string path = GetPathToAsset (inTexture);
 				try {
-					PaletteMapper.CreatePaletteMapAndKey (path, inTexture, inPaletteKey, sortPalette, overwriteExistingFiles);
+					PaletteMapper.CreatePaletteMapAndKey (path, inTexture, inPaletteKey, sortPalette, overwriteExistingFiles, paletteKeyFilename, paletteMapFilename);
 				
 					Debug.Log ("<color=green>Palette Map and Key for file " + inTexture.name + " created successfully</color>");
 				} catch (System.NotSupportedException e) {
