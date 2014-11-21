@@ -25,6 +25,7 @@ namespace RedBlueTools
 	class PaletteMapperWindow : EditorWindow
 	{
 		Object sourceTexture = null;
+		Object lastSourceTexture;
 		string paletteKeyFilename;
 		string paletteMapFilename;
 		Object suppliedPalleteKey = null;
@@ -48,8 +49,16 @@ namespace RedBlueTools
 		{
 			GUILayout.Label ("Palette Map", EditorStyles.boldLabel);
 			sourceTexture = EditorGUILayout.ObjectField ("Source Texture", sourceTexture, typeof(Texture2D), false);
-			if(sourceTexture != null) {
+
+			bool sourceTextureChanged = lastSourceTexture != sourceTexture;
+			if(sourceTextureChanged) {
+				lastSourceTexture = sourceTexture;
+
 				paletteMapFilename = sourceTexture.name + "_PaletteMap";
+				paletteKeyFilename = sourceTexture.name + "_PaletteKey";
+			}
+
+			if(sourceTexture != null) {
 				paletteMapFilename = EditorGUILayout.TextField("Output Filename", paletteMapFilename);
 			}
 
@@ -66,7 +75,6 @@ namespace RedBlueTools
 				break;
 			}
 			if(sourceTexture != null) {
-				paletteKeyFilename = sourceTexture.name + "_PaletteKey";
 				paletteKeyFilename = EditorGUILayout.TextField("Output Filename", paletteKeyFilename);
 			}
 
