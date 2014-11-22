@@ -7,7 +7,6 @@ Shader "RBTools/Palettized Image/Palette Sprite"
 		_Palette ("Palette Texture", 2D) = "white" {}
 		_Tint ("Tint", Color) = (1,1,1,1)
 		[MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
-		_PaletteY ("PaletteY", Float) = 0
 	}
 
 	SubShader
@@ -67,7 +66,7 @@ Shader "RBTools/Palettized Image/Palette Sprite"
 
 			sampler2D _MainTex;
 			sampler2D _Palette;
-			float _PaletteY;
+			float4 _Palette_ST; // Stores the tiling and offset information
 
 			fixed4 frag(v2f IN) : SV_Target
 			{
@@ -75,10 +74,12 @@ Shader "RBTools/Palettized Image/Palette Sprite"
 				
 				// The alpha channel of the palette map points to UVs in the palette key.
 				float paletteX = paletteMapColor.a;
-				float2 paletteUV = float2(paletteX, _PaletteY);
+				float2 paletteUV = float2(paletteX, 0.0f);
+				// Get the palette's UV accounting for texture tiling and offset
+				float2 paletteUVTransformed = TRANSFORM_TEX(paletteUV, _Palette);
 				
 				// Get the color from the palette key
-				fixed4 outColor = tex2D(_Palette, paletteUV);
+				fixed4 outColor = tex2D(_Palette, paletteUVTransformed);
 				
 				// Apply the tint to the final color
 				outColor *= _Tint;

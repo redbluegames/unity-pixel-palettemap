@@ -26,21 +26,17 @@ namespace RedBlueTools
 	public class PaletteScroll : MonoBehaviour
 	{
 
-		string paletteVariable = "_PaletteY";
+		string paletteTexture = "_Palette";
 		public float scrollRate;
 
 		void Update ()
 		{
 			float deltaY = scrollRate * Time.deltaTime;
-			float currentPaletteY = renderer.material.GetFloat (paletteVariable);
+			float currentPaletteY = renderer.material.GetTextureOffset(paletteTexture).y;
 			float newPaletteY = (currentPaletteY + deltaY) % 1.0f;
 
-			// Set the paletteY for the given material.
-			renderer.material.SetFloat (paletteVariable, newPaletteY);
-
-			// This would change the palette for all objects using this material. Careful with this,
-			// since changes will persist across Play mode.
-			//renderer.sharedMaterial.SetFloat(paletteVariable, newPaletteY);
+			// Set the paletteYOffset for the given material.
+			renderer.material.SetTextureOffset(paletteTexture, new Vector2(0.0f,newPaletteY));
 		}
 	}
 
