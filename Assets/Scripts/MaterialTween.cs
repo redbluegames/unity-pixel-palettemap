@@ -24,59 +24,86 @@ namespace RedBlueTools
 	/// </summary>
 	public class MaterialTween : MonoBehaviour
 	{
-	
 		public Material[] tweenMaterials;
-		[Range(0.01f, 10.0f)]
-		public float
-			swapInterval;
+		public float swapInterval;
 		public float duration;
+		public bool TweenOnAwake;
+		[SerializeField] [ReadOnlyAttribute]
+		bool IsTweening;
+		float timeTweening;
 		public static float INFINITE_DURATION = -1.0f;
 	
 		// State tracking members
 		Material originalMaterial;
-		float timeUntilSwap;
-		float totalTimeRunning;
 		int currentIndex = 0;
 
-		void OnEnable ()
+		IEnumerator tweenCoroutine;
+
+		void Awake ()
 		{
-			if (tweenMaterials.Length <= 0) {
+			if(TweenOnAwake) {
+				BeginTweening ();
+			}
+		}
+
+		public void BeginTweening ()
+		{
+			if (tweenMaterials == null || tweenMaterials.Length <= 0) {
 				Debug.LogError ("No textures assigned to Material Tween on GameObject: " + gameObject.name 
-					+ "\nMust have at least one texture.");
+				                + "\nMust have at least one texture.");
 				enabled = false;
 				return;
 			}
-		
-			originalMaterial = renderer.material;
 
-			timeUntilSwap = swapInterval;
-			totalTimeRunning = 0.0f;
+			if(Mathf.Approximately(duration, 0.0f)) {
+				Debug.LogWarning("Trying to begin a material tween with no duration. Please assign a duration.");
+				enabled = false;
+				return;
+			}
+
+			// If told to tween while already tweening, reset duration.
+			if(IsTweening) {
+				timeTweening = 0.0f;
+				return;
+			}
+			
+			tweenCoroutine = TweenForDuration();
+			StartCoroutine(tweenCoroutine);
+		}
+
+		IEnumerator TweenForDuration ()
+		{
+			IsTweening = true;
+
 			currentIndex = 0;
+			originalMaterial = renderer.material;
 			renderer.material = tweenMaterials [currentIndex];
-		}
-	
-		void OnDisable ()
-		{
-			// Restore original material in case we end on a weird material
-			renderer.material = originalMaterial;
-		}
-	
-		void Update ()
-		{
-			timeUntilSwap -= Time.deltaTime;
-			// Every swap interval, go to the next Material
-			if (timeUntilSwap <= 0.0f) {
-				IncrementMaterial ();
-				// Reset timer
-				timeUntilSwap = swapInterval;
+
+			float timeUntilSwap = swapInterval;
+			timeTweening = 0.0f;
+			while (true) {
+
+				timeUntilSwap -= Time.deltaTime;
+				// Every swap interval, go to the next Material
+				if (timeUntilSwap <= 0.0f) {
+					IncrementMaterial ();
+					// Reset timer, carrying over extra deltaTime
+					timeUntilSwap += swapInterval;
+				}
+
+				// Check if duration time has elapsed
+				if(duration > 0.0f) {
+					timeTweening += Time.deltaTime;
+					if(timeTweening >= duration) {
+						break;
+					}
+				}
+
+				yield return null;
 			}
-		
-			totalTimeRunning += Time.deltaTime;
-			if (!Mathf.Approximately (duration, INFINITE_DURATION) && totalTimeRunning >= duration) {
-				StopTweening ();
-			}
+
+			FinishTween ();
 		}
-	
 		void IncrementMaterial ()
 		{
 			currentIndex = currentIndex + 1;
@@ -86,10 +113,21 @@ namespace RedBlueTools
 			}
 			renderer.material = tweenMaterials [currentIndex];
 		}
-	
+		
+		void FinishTween ()
+		{
+			StopTweening ();
+		}
+
 		public void StopTweening ()
 		{
-			enabled = false;
+			IsTweening = false;
+
+			// Restore original material
+			renderer.material = originalMaterial;
+
+			StopCoroutine(tweenCoroutine);
+			tweenCoroutine = null;
 		}
 	}
 }
