@@ -22,7 +22,7 @@ using System.Collections;
 
 namespace RedBlueTools
 {
-	class PaletteMapperWindow : EditorWindow
+	class RBPaletteMapperWindow : EditorWindow
 	{
 		Object sourceTexture = null;
 		Object lastSourceTexture;
@@ -42,7 +42,7 @@ namespace RedBlueTools
 		[MenuItem ("RedBlueTools/Palette Mapper")]
 		public static void  ShowWindow ()
 		{
-			EditorWindow.GetWindow<PaletteMapperWindow> ("Palette Mapper");
+			EditorWindow.GetWindow<RBPaletteMapperWindow> ("Palette Mapper");
 		}
 	
 		void OnGUI ()
@@ -83,16 +83,16 @@ namespace RedBlueTools
 
 			if (GUILayout.Button ("Build")) {
 				if (sourceTexture == null) {
-					Debug.LogError ("PaletteMapper Error: No source texture specified");
+					Debug.LogError ("RBPaletteMapper Error: No source texture specified");
 					return;
 				}
 
 				// Validate source texture
 				Texture2D inTexture = (Texture2D)sourceTexture;
 				try {
-					PaletteMapper.ValidateSourceTexture (inTexture);
+					RBPaletteMapper.ValidateSourceTexture (inTexture);
 				} catch (System.BadImageFormatException e) {
-					Debug.LogError ("PaletteMapper Error: " + e.Message);
+					Debug.LogError ("RBPaletteMapper Error: " + e.Message);
 					return;
 				}
 
@@ -100,22 +100,22 @@ namespace RedBlueTools
 				Texture2D inPaletteKey = null;
 				if (paletteKeyOption == PaletteKeyOption.SupplyCustomPaletteKey) {
 					if (suppliedPalleteKey == null) {
-						Debug.LogError ("PaletteMapper Error: Trying to use custom palette key but no palette key specified." +
+						Debug.LogError ("RBPaletteMapper Error: Trying to use custom palette key but no palette key specified." +
 							"\nPlease select a texture to use as the Palette Key.");
 						return;
 					}
 					inPaletteKey = (Texture2D)suppliedPalleteKey;
 					try {
-						PaletteMapper.ValidatePaletteKeyTexture (inPaletteKey);
+						RBPaletteMapper.ValidatePaletteKeyTexture (inPaletteKey);
 					} catch (System.BadImageFormatException e) {
-						Debug.LogError ("PaletteMapper Error: " + e.Message);
+						Debug.LogError ("RBPaletteMapper Error: " + e.Message);
 						return;
 					}
 				}
 
 				string path = GetPathToAsset (inTexture);
 				try {
-					PaletteMapper.CreatePaletteMapAndKey (path, inTexture, inPaletteKey, sortPalette, overwriteExistingFiles, paletteKeyFilename, paletteMapFilename);
+					RBPaletteMapper.CreatePaletteMapAndKey (path, inTexture, inPaletteKey, sortPalette, overwriteExistingFiles, paletteKeyFilename, paletteMapFilename);
 				
 					Debug.Log ("<color=green>Palette Map and Key for file " + inTexture.name + " created successfully</color>");
 				} catch (System.NotSupportedException e) {

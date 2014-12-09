@@ -24,7 +24,7 @@ using System.Collections.Generic;
 
 namespace RedBlueTools
 {
-	public static class PaletteMapper
+	public static class RBPaletteMapper
 	{
 
 		public static void ValidateSourceTexture (Texture2D sourceTexture)
