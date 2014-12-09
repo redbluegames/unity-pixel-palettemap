@@ -28,7 +28,6 @@ namespace RedBlueTools
 		public float swapInterval;
 		public float duration;
 		public bool TweenOnAwake;
-		[SerializeField] [ReadOnlyAttribute]
 		bool IsTweening;
 		float timeTweening;
 		public static float INFINITE_DURATION = -1.0f;
