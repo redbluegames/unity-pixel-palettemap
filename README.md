@@ -52,8 +52,8 @@ For each sprite you want to palettize:
   1. Assign the palette map into the Material as the Base texture
   2. Assign the newly created palette texture into the Material as the Palette texture
 
-###To create palette swapping:
-	There are many ways to achieve a palette swapping effect. Each method is just a different way of changing out the sprite or texture’s palette, while using the same palette map. You can change the object’s Material to a material that uses another palette, you can change the specific Palette texture used by a particular material, or if you have multiple palettes in one palette image, you can change the texture’s Y offset of your material. I’ve included several scripts that provide examples of this. MaterialTween.cs swaps between materials, PaletteScroll.cs scrolls through the palettes in a multi-palette texture by setting texture offset, and SetTextureVariableExample.cs swaps out the textures supplied as the palette to a material.
+###Creating Palette Swapping
+There are many ways to achieve a palette swapping effect. Each method is just a different way of changing out the sprite or texture’s palette, while using the same palette map. You can change the object’s Material to a material that uses another palette, you can change the specific Palette texture used by a particular material, or if you have multiple palettes in one palette image, you can change the texture’s Y offset of your material. I’ve included several scripts that provide examples of this. MaterialTween.cs swaps between materials, PaletteScroll.cs scrolls through the palettes in a multi-palette texture by setting texture offset, and SetTextureVariableExample.cs swaps out the textures supplied as the palette to a material.
 	
 ###Advanced Workflow and Best Practices
 The tool works great for quick and dirty palettized sprites. But if you have a large project where the sprites you are using change frequently, you will want to use these advanced workflow recommendations.
@@ -106,9 +106,16 @@ Troubleshooting
 
 Further Reading
 =============
-Indexed Colors: http://en.wikipedia.org/wiki/Indexed_color
+
+Indexed Colors
+
+http://en.wikipedia.org/wiki/Indexed_color
+
 http://en.wikipedia.org/wiki/Palette_swap
-Shader: http://gamedev.stackexchange.com/questions/43294/creating-a-retro-style-palette-swapping-effect-in-opengl
+
+Shaders
+
+http://gamedev.stackexchange.com/questions/43294/creating-a-retro-style-palette-swapping-effect-in-opengl
 
 Attribution
 ================
