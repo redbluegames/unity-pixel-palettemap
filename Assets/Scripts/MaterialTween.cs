@@ -75,8 +75,8 @@ namespace RedBlueTools
 			IsTweening = true;
 
 			currentIndex = 0;
-			originalMaterial = renderer.material;
-			renderer.material = tweenMaterials [currentIndex];
+			originalMaterial = GetComponent<Renderer>().material;
+			GetComponent<Renderer>().material = tweenMaterials [currentIndex];
 
 			float timeUntilSwap = swapInterval;
 			timeTweening = 0.0f;
@@ -110,7 +110,7 @@ namespace RedBlueTools
 			if (currentIndex >= tweenMaterials.Length) {
 				currentIndex = 0;
 			}
-			renderer.material = tweenMaterials [currentIndex];
+			GetComponent<Renderer>().material = tweenMaterials [currentIndex];
 		}
 		
 		void FinishTween ()
@@ -123,7 +123,7 @@ namespace RedBlueTools
 			IsTweening = false;
 
 			// Restore original material
-			renderer.material = originalMaterial;
+			GetComponent<Renderer>().material = originalMaterial;
 
 			StopCoroutine(tweenCoroutine);
 			tweenCoroutine = null;

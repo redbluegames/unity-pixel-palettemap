@@ -32,11 +32,11 @@ namespace RedBlueTools
 		void Update ()
 		{
 			float deltaY = scrollRate * Time.deltaTime;
-			float currentPaletteY = renderer.material.GetTextureOffset(paletteTexture).y;
+			float currentPaletteY = GetComponent<Renderer>().material.GetTextureOffset(paletteTexture).y;
 			float newPaletteY = (currentPaletteY + deltaY) % 1.0f;
 
 			// Set the paletteYOffset for the given material.
-			renderer.material.SetTextureOffset(paletteTexture, new Vector2(0.0f,newPaletteY));
+			GetComponent<Renderer>().material.SetTextureOffset(paletteTexture, new Vector2(0.0f,newPaletteY));
 		}
 	}
 

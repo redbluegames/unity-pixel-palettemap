@@ -45,7 +45,7 @@ namespace RedBlueTools
 			}
 
 			// Set the palette for the given material.
-			renderer.material.SetTexture (paletteVariable, palettes [currentIndex]);
+			GetComponent<Renderer>().material.SetTexture (paletteVariable, palettes [currentIndex]);
 
 			// This would change the palette for all objects using this material. Careful with this,
 			// since changes will persist across Play mode.
