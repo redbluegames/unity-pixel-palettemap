@@ -7,8 +7,26 @@ public static class RBPaletteCreator {
 	[MenuItem ("Assets/Create/RBPalette")]
 	public static RBPalette CreatePalette ()
 	{
-		// TODO: Needs to support creating multiple at this location
+		// TODO: Needs to support creating duplicates (count) at this location - RBPalette0, RBPalette1 etc.
 		return CreatePalette (GetPathOfSelection(), "RBPalette.asset");
+	}
+
+	static RBPalette CreatePalette (string path, string filename)
+	{
+		RBPalette paletteAsset = ScriptableObject.CreateInstance<RBPalette> ();
+		return SaveRBPalette (paletteAsset, path, filename);
+	}
+	
+	static RBPalette SaveRBPalette (RBPalette palette, string path, string filename)
+	{
+		string fullpath = path + "/" + filename;
+		AssetDatabase.CreateAsset (palette, fullpath);
+		AssetDatabase.SaveAssets ();
+		
+		EditorUtility.FocusProjectWindow ();
+		Selection.activeObject = palette;
+		
+		return palette;
 	}
 
 	static string GetPathOfSelection ()
@@ -28,17 +46,21 @@ public static class RBPaletteCreator {
 		return path;
 	}
 	
-	static RBPalette CreatePalette (string path, string filename)
+	[MenuItem ("Assets/ExtractPalette")]
+	public static RBPalette ExtractPalleteFromTexture ()
 	{
-		RBPalette paletteAsset = ScriptableObject.CreateInstance<RBPalette> ();
+		Texture2D selectedTexture = (Texture2D) Selection.activeObject;
+		RBPalette paletteFromTexture = RBPalette.CreatePaletteFromTexture (selectedTexture);
+		return SaveRBPalette (paletteFromTexture, GetPathOfSelection (), "RBPalette.asset");
+	}
+	
+	[MenuItem ("Assets/ExtractPalette", true)]
+	public static bool IsValidTargetForPalette ()
+	{
+		if (Selection.activeObject == null) {
+			return false;
+		}
 
-		string fullpath = path + "/" + filename;
-		AssetDatabase.CreateAsset (paletteAsset, fullpath);
-		AssetDatabase.SaveAssets ();
-		
-		EditorUtility.FocusProjectWindow ();
-		Selection.activeObject = paletteAsset;
-		
-		return paletteAsset;
+		return Selection.activeObject.GetType() == typeof(Texture2D);
 	}
 }
