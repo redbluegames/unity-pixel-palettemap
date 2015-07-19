@@ -126,6 +126,11 @@ namespace RedBlueTools
 				Color colorToLookup = ClearRGBIfNoAlpha (colorInPalette);
 				return colorsInPalette.IndexOf (colorToLookup);
 			}
+
+			public Color GetColor (int index)
+			{
+				return colorsInPalette [index];
+			}
 		
 			public static PaletteKey CreatePaletteKeyFromTexture (Texture2D sourceTexture)
 			{
@@ -139,7 +144,7 @@ namespace RedBlueTools
 						paletteKey.AddColor (colorAtSource);
 					}
 				}
-			
+
 				return paletteKey;
 			}
 
