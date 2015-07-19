@@ -7,7 +7,8 @@ using UnityEditor;
 public class RBPaletteGroup : ScriptableObject
 {
 	public string GroupName = "RBPaletteGroup";
-	public List<RBPalette> palettes;
+	[SerializeField]
+	List<RBPalette> palettes;
 
 	RBPalette basePalette { 
 		get {
@@ -101,29 +102,7 @@ public class RBPaletteGroup : ScriptableObject
 		palettes.RemoveAt (index);
 	}
 
-	Texture2D CreateAsTexture ()
-	{
-		// Write the colors into a texture
-		Texture2D paletteKeyAsTexture = new Texture2D (NumColorsInPalette, Count, TextureFormat.RGBA32, false);
-		paletteKeyAsTexture.hideFlags = HideFlags.HideAndDontSave;
-		paletteKeyAsTexture.SetPixels (GetColorsAsArray ());
-		paletteKeyAsTexture.Apply ();
-		
-		return paletteKeyAsTexture;
-	}
-
-	Color[] GetColorsAsArray ()
-	{
-		Color[] colorsAsArray = new Color [NumColorsInPalette * Count];
-		for (int paletteIndex = 0; paletteIndex < Count; paletteIndex++) {
-			for (int colorIndex = 0; colorIndex < NumColorsInPalette; colorIndex++) {
-				int i = paletteIndex * NumColorsInPalette + colorIndex;
-				colorsAsArray[i] = palettes[paletteIndex][colorIndex];
-			}
-		}
-		return colorsAsArray;
-	}
-	
+	#region Output Functions
 	public void WriteToFile (string fullPathToFile, bool allowOverwriting)
 	{
 		if (File.Exists (fullPathToFile) && !allowOverwriting) {
@@ -131,12 +110,12 @@ public class RBPaletteGroup : ScriptableObject
 			                                           "\nFile Path: " + fullPathToFile);
 		}
 		
-		Texture2D keyAsTexture = CreateAsTexture ();
+		Texture2D paletteGroupAsTexture = CreateAsTexture ();
 		try {
-			byte[] outTextureData = keyAsTexture.EncodeToPNG ();
+			byte[] outTextureData = paletteGroupAsTexture.EncodeToPNG ();
 			File.WriteAllBytes (fullPathToFile, outTextureData);
 		} catch (System.Exception e) {
-			throw new System.IO.IOException ("Encountered IO exception during PaletteKey write: " + e.Message);
+			throw new System.IO.IOException ("Encountered IO exception during PaletteGroup write: " + e.Message);
 		}
 		
 		// Force refresh so that we can set its Import settings immediately
@@ -157,4 +136,28 @@ public class RBPaletteGroup : ScriptableObject
 		// Force Unity to see the file and use the new import settings
 		AssetDatabase.ImportAsset (fullPathToFile); 
 	}
+	
+	Texture2D CreateAsTexture ()
+	{
+		// Write the colors into a texture
+		Texture2D paletteGroupAsTexture = new Texture2D (NumColorsInPalette, Count, TextureFormat.RGBA32, false);
+		paletteGroupAsTexture.hideFlags = HideFlags.HideAndDontSave;
+		paletteGroupAsTexture.SetPixels (GetColorsAsArray ());
+		paletteGroupAsTexture.Apply ();
+		
+		return paletteGroupAsTexture;
+	}
+	
+	Color[] GetColorsAsArray ()
+	{
+		Color[] colorsAsArray = new Color [NumColorsInPalette * Count];
+		for (int paletteIndex = 0; paletteIndex < Count; paletteIndex++) {
+			for (int colorIndex = 0; colorIndex < NumColorsInPalette; colorIndex++) {
+				int i = paletteIndex * NumColorsInPalette + colorIndex;
+				colorsAsArray[i] = palettes[paletteIndex][colorIndex];
+			}
+		}
+		return colorsAsArray;
+	}
+	#endregion
 }
