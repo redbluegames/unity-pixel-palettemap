@@ -55,6 +55,10 @@ public class RBPaletteGroup : ScriptableObject
 
 	public void RemoveColorAtIndex (int index)
 	{
+		if (index < 0 || index >= NumColorsInPalette) {
+			throw new System.IndexOutOfRangeException 
+				(string.Format ("Trying to remove color at invalid index, {0}", index));
+		}
 		foreach (RBPalette palette in palettes) {
 			palette.RemoveColorAtIndex (index);
 		}

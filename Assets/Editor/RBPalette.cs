@@ -6,10 +6,29 @@ using System.Collections;
 [System.Serializable]
 public class RBPalette
 {
-
 	public string PaletteName;
-	public List<Color> ColorsInPalette;
+	[SerializeField]
+	List<Color> ColorsInPalette;
 
+	public Color this [int index] {
+		get {
+			return GetColor (index);
+		}
+		set {
+			SetColor (index, value);
+		}
+	}
+
+	Color GetColor (int index)
+	{
+		return ColorsInPalette [index];
+	}
+
+	void SetColor (int index, Color color)
+	{
+		ColorsInPalette [index] = color;
+	}
+	
 	public RBPalette () : this ("RBPalette")
 	{
 	}

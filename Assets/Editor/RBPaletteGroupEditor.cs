@@ -5,6 +5,8 @@ using System.Collections;
 
 [CustomEditor(typeof(RBPaletteGroup))]
 public class RBPaletteGroupEditor : Editor {
+	
+	int colorIndex = 0;
 
 	public override void OnInspectorGUI ()
 	{
@@ -20,6 +22,12 @@ public class RBPaletteGroupEditor : Editor {
 		if( GUILayout.Button( "Add Palette", GUILayout.ExpandWidth(false)) )
 		{
 			targetRBPaletteGroup.AddPalette ();
+		}
+
+		colorIndex = EditorGUILayout.IntField ("Color index: ", colorIndex);
+		if( GUILayout.Button( "Remove Color At Index", GUILayout.ExpandWidth(false)) )
+		{
+			targetRBPaletteGroup.RemoveColorAtIndex (colorIndex);
 		}
 	}
 }
