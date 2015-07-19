@@ -36,5 +36,24 @@ public class RBPaletteGroupEditor : Editor {
 		{
 			targetRBPaletteGroup.RemovePaletteAtIndex (paletteIndex);
 		}
+
+		if( GUILayout.Button( "Export As Texture", GUILayout.ExpandWidth(false)) )
+		{
+			string outputPath = GetPathToAsset (targetRBPaletteGroup);
+			string extension = ".png";
+			string filename = targetRBPaletteGroup.GroupName + extension;
+			targetRBPaletteGroup.WriteToFile (outputPath + filename, true);
+		}
+	}
+	
+	string GetPathToAsset (Object asset)
+	{
+		string path = AssetDatabase.GetAssetPath (asset);
+		
+		// Strip filename out from asset path
+		string[] directories = path.Split ('/');
+		path = path.TrimEnd (directories [directories.Length - 1].ToCharArray ());
+		
+		return path;
 	}
 }
