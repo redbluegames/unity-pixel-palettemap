@@ -5,19 +5,19 @@ using System.IO;
 public static class RBPaletteCreator {
 
 	[MenuItem ("Assets/Create/RBPalette")]
-	public static RBPalette CreatePalette ()
+	public static RBPaletteGroup CreatePalette ()
 	{
 		// TODO: Needs to support creating duplicates (count) at this location - RBPalette0, RBPalette1 etc.
-		return CreatePalette (GetPathOfSelection(), "RBPalette.asset");
+		return CreatePalette (GetPathOfSelection(), "RBPaletteGroup.asset");
 	}
 
-	static RBPalette CreatePalette (string path, string filename)
+	static RBPaletteGroup CreatePalette (string path, string filename)
 	{
-		RBPalette paletteAsset = ScriptableObject.CreateInstance<RBPalette> ();
+		RBPaletteGroup paletteAsset = RBPaletteGroup.CreateInstance ();
 		return SaveRBPalette (paletteAsset, path, filename);
 	}
 	
-	static RBPalette SaveRBPalette (RBPalette palette, string path, string filename)
+	static RBPaletteGroup SaveRBPalette (RBPaletteGroup palette, string path, string filename)
 	{
 		string fullpath = path + "/" + filename;
 		AssetDatabase.CreateAsset (palette, fullpath);
@@ -47,11 +47,12 @@ public static class RBPaletteCreator {
 	}
 	
 	[MenuItem ("Assets/ExtractPalette")]
-	public static RBPalette ExtractPalleteFromTexture ()
+	public static RBPaletteGroup ExtractPalleteFromTexture ()
 	{
 		Texture2D selectedTexture = (Texture2D) Selection.activeObject;
 		RBPalette paletteFromTexture = RBPalette.CreatePaletteFromTexture (selectedTexture);
-		return SaveRBPalette (paletteFromTexture, GetPathOfSelection (), "RBPalette.asset");
+		RBPaletteGroup paletteGroup = RBPaletteGroup.CreateInstance (paletteFromTexture);
+		return SaveRBPalette (paletteGroup, GetPathOfSelection (), "RBPalette.asset");
 	}
 	
 	[MenuItem ("Assets/ExtractPalette", true)]

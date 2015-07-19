@@ -3,22 +3,51 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.Collections;
 
-public class RBPalette : ScriptableObject {
+[System.Serializable]
+public class RBPalette
+{
 
-	public List<RBPaletteEntry> ColorsInPalette = new List<RBPaletteEntry> ();
+	public string PaletteName;
+	public List<Color> ColorsInPalette;
 
-	[System.Serializable]
-	public class RBPaletteEntry {
-		public Color color;
-		public string label;
-
-		public RBPaletteEntry (Color color, string label)
-		{
-			this.color = color;
-			this.label = label;
-		}
+	public RBPalette () : this ("RBPalette")
+	{
 	}
-	
+
+	public RBPalette (string paletteName)
+	{
+		this.PaletteName = paletteName;
+		this.ColorsInPalette = new List<Color> ();
+	}
+
+	public RBPalette (RBPalette paletteToCopy)
+	{
+		this.PaletteName = paletteToCopy.PaletteName;
+		this.ColorsInPalette = new List<Color> ();
+		this.ColorsInPalette.AddRange (paletteToCopy.ColorsInPalette);
+	}
+
+	public void AddColor (Color color)
+	{
+		ColorsInPalette.Add (color);
+	}
+
+	public void RemoveColorAtIndex (int index)
+	{
+		ColorsInPalette.RemoveAt (index);
+	}
+
+	public bool ContainsColor (Color colorToFind)
+	{
+		for (int i = 0; i < ColorsInPalette.Count; i++) {
+			if (ColorsInPalette [i] == colorToFind) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
 	public int Count {
 		get {
 			return ColorsInPalette.Count;
@@ -34,22 +63,11 @@ public class RBPalette : ScriptableObject {
 		for (int i = 0; i < sourcePixels.Length; i++) {
 			Color colorAtSource = ClearRGBIfNoAlpha (sourcePixels [i]);
 			if (!palette.ContainsColor (colorAtSource)) {
-				palette.ColorsInPalette.Add ( new RBPaletteEntry (colorAtSource, i.ToString ()));
+				palette.AddColor (colorAtSource);
 			}
 		}
 		
 		return palette;
-	}
-	
-	public bool ContainsColor (Color colorToFind)
-	{
-		for (int i = 0; i < ColorsInPalette.Count; i++) {
-			if (ColorsInPalette[i].color == colorToFind) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	// Clears out the RGB when fully transparent so that we don't get lots of versions of transparent in the palette
