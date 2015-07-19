@@ -9,17 +9,28 @@ public class RBPaletteGroup : ScriptableObject
 	RBPalette basePalette { 
 		get {
 			return palettes [0];
-		} set {
-			palettes[0] = value;
+		}
+		set {
+			palettes [0] = value;
 		}
 	}
 
-	int NumColorsInPalette {
+	public int NumColorsInPalette {
 		get {
 			if (palettes == null || palettes.Count == 0) {
 				return 0;
 			} else {
 				return basePalette.Count;
+			}
+		}
+	}
+
+	public int Count {
+		get {
+			if (palettes == null) {
+				return 0;
+			} else {
+				return palettes.Count;
 			}
 		}
 	}
@@ -66,6 +77,10 @@ public class RBPaletteGroup : ScriptableObject
 
 	public void RemovePaletteAtIndex (int index)
 	{
+		if (index < 0 || index >= Count) {
+			throw new System.IndexOutOfRangeException 
+				(string.Format ("Trying to remove palette at invalid index, {0}", index));
+		}
 		palettes.RemoveAt (index);
 	}
 
