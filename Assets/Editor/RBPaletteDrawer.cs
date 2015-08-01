@@ -56,9 +56,6 @@ public class RBPaletteDrawer : PropertyDrawer
 			colorList = GetReorderableList (listProperty);
 			colorList.DoList (position);
 		} else {
-			SerializedProperty listProperty = property.FindPropertyRelative ("ColorsInPalette");
-			List<SerializedProperty> colorProperties = GetListFromSerializedProperty (listProperty);
-
 			// Draw the PaletteName
 			EditorGUILayout.BeginVertical (GUI.skin.box);
 			SerializedProperty nameProperty = property.FindPropertyRelative ("PaletteName");
@@ -66,30 +63,47 @@ public class RBPaletteDrawer : PropertyDrawer
 			EditorGUILayout.LabelField (paletteName, EditorStyles.boldLabel, GUILayout.MaxWidth (100.0f));
 
 			// Draw the list of colors
-			int numColorsPerLine = GetNumColorsPerLine ();
-			int numLines = GetNumLines (property);
-			GUIStyle paletteStyle = new GUIStyle (GUI.skin.box);
-			EditorGUILayout.BeginVertical (paletteStyle);
-			for (int j = 0; j < numLines; j++) {
-				EditorGUILayout.BeginHorizontal (GUILayout.Width (position.width));
-				for (int i = 0; i < numColorsPerLine; i++) {
-					int listIndex = i + j * numColorsPerLine;
-					if (listIndex >= colorProperties.Count) {
-						// We've printed all colors.
-						break;
-					}
-					var colorPropertyAtIndex = colorProperties [listIndex];
-					colorPropertyAtIndex.colorValue = EditorGUILayout.ColorField (GUIContent.none, colorPropertyAtIndex.colorValue,
-						false, true, false, new ColorPickerHDRConfig (0.0f, 1.0f, 0.0f, 1.0f), 
-						GUILayout.Width (widthPerColor));
-				}
-				EditorGUILayout.EndHorizontal (); // End Row
-			}
-			EditorGUILayout.EndVertical (); // End Colors
+			DrawColorsInPalette (property);
+
 			EditorGUILayout.EndVertical (); // End Color Palette
 		}
 
 		property.serializedObject.ApplyModifiedProperties ();
+	}
+
+	void DrawColorsInPalette (SerializedProperty property)
+	{
+		// Get the colors as properties
+		SerializedProperty listProperty = property.FindPropertyRelative ("ColorsInPalette");
+		List<SerializedProperty> colorProperties = GetListFromSerializedProperty (listProperty);
+
+		// Draw the table of colors
+		int numColorsPerLine = GetNumColorsPerLine ();
+		int numLines = GetNumLines (property);
+		GUIStyle paletteStyle = new GUIStyle (GUI.skin.box);
+		EditorGUILayout.BeginVertical (paletteStyle);
+		for (int i = 0; i < numLines; i++) {
+			int startingLineColorIndex = i * numColorsPerLine;
+			int colorsRemainingInPalette = colorProperties.Count - startingLineColorIndex;
+			int numColorsOnThisLine = Mathf.Min (colorsRemainingInPalette, numColorsPerLine);
+			List<SerializedProperty> propertiesOnThisLine = 
+				colorProperties.GetRange (startingLineColorIndex, numColorsOnThisLine);
+			DrawColorPaletteLine (propertiesOnThisLine);
+		}
+		EditorGUILayout.EndVertical (); // End Colors
+
+	}
+
+	void DrawColorPaletteLine (List<SerializedProperty> colorProperties)
+	{
+		EditorGUILayout.BeginHorizontal ();
+		for (int i = 0; i < colorProperties.Count; i++) {
+			var colorPropertyAtIndex = colorProperties [i];
+			colorPropertyAtIndex.colorValue = EditorGUILayout.ColorField (GUIContent.none, colorPropertyAtIndex.colorValue,
+				false, true, false, new ColorPickerHDRConfig (0.0f, 1.0f, 0.0f, 1.0f), 
+				GUILayout.Width (widthPerColor));
+		}
+		EditorGUILayout.EndHorizontal (); // End Row
 	}
 
 	/// <summary>
