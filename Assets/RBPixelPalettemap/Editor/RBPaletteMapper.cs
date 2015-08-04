@@ -72,6 +72,7 @@ namespace RedBlueTools
 				try {
 					string paletteGroupFilename = paletteKeyFileName + ".asset";
 					RBPaletteGroup createdGroup = RBPaletteCreator.CreatePaletteGroup (outputPath, paletteGroupFilename, overwriteExistingFiles);
+					createdGroup.GroupName = paletteKeyFileName;
 					createdGroup.SetBasePalette (basePalette);
 				} catch (IOException) {
 					throw new System.IO.IOException ("Failed to write PaletteMap. A PaletteGroup already exists by the name: " + paletteKeyFileName);

@@ -65,7 +65,9 @@ public class RBPalette
 	{
 		int index = -1;
 		for (int i = 0; i < ColorsInPalette.Count; i++) {
-			if (ColorsInPalette [i] == colorToFind) {
+			bool colorToFindIsZeroAlpha = Mathf.Approximately (colorToFind.a, 0.0f);
+			bool currentColorIsZeroAlpha = Mathf.Approximately (ColorsInPalette [i].a, 0.0f);
+			if ((colorToFindIsZeroAlpha && currentColorIsZeroAlpha) || ColorsInPalette [i] == colorToFind) {
 				index = i;
 				break;
 			}
@@ -134,5 +136,18 @@ public class RBPalette
 				return 1;
 			}
 		}
+	}
+
+	public override string ToString ()
+	{
+		string fullString = "";
+		fullString += "[RBPalette: Name=" + PaletteName  + " Count=" + Count + " Colors=";
+		for (int i =0; i < Count; i++) {
+			string colorString = "{";
+			colorString += (Color32) ColorsInPalette[i];
+			colorString += "}";
+			fullString += colorString;
+		}
+		return fullString;
 	}
 }
