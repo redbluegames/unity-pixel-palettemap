@@ -1,11 +1,15 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using UnityEditorInternal;
 using System.Collections.Generic;
 using System.Collections;
 
 [System.Serializable]
 public class RBPalette
 {
+	public bool IsShowingDetails;
+	public ReorderableList AsReorderableList;
+
 	public string PaletteName;
 	[SerializeField]
 	List<Color> ColorsInPalette;

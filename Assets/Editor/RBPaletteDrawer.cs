@@ -7,20 +7,14 @@ using System.Collections.Generic;
 [CustomPropertyDrawer (typeof(RBPalette))]
 public class RBPaletteDrawer : PropertyDrawer
 {
-	bool isEditing = false;
-	private ReorderableList colorList;
 	const float widthPerColor = 40.0f;
+	ReorderableList colorList;
 
 	public override float GetPropertyHeight (SerializedProperty serializedProperty, GUIContent label)
 	{
-		if (isEditing) {
-			SerializedProperty listProperty = serializedProperty.FindPropertyRelative ("ColorsInPalette");
-			return GetReorderableList (listProperty).GetHeight ();
-		} else {
-			// Return 0 when using EditorGUILayout to draw Property (which is apparently not allowed,
-			// but I'm a rebel.)
-			return 0;
-		}
+		// Return 0 when using EditorGUILayout to draw Property (which is apparently not allowed,
+		// but I'm a rebel.)
+		return 0;
 	}
 
 	int GetNumColorsPerLine ()
@@ -51,22 +45,19 @@ public class RBPaletteDrawer : PropertyDrawer
 
 	public override void OnGUI (Rect position, SerializedProperty property, GUIContent label)
 	{
-		if (isEditing) {
-			SerializedProperty listProperty = property.FindPropertyRelative ("ColorsInPalette");
-			colorList = GetReorderableList (listProperty);
-			colorList.DoList (position);
-		} else {
-			// Draw the PaletteName
-			EditorGUILayout.BeginVertical (GUI.skin.box);
-			SerializedProperty nameProperty = property.FindPropertyRelative ("PaletteName");
-			string paletteName = nameProperty.stringValue;
-			EditorGUILayout.LabelField (paletteName, EditorStyles.boldLabel, GUILayout.MaxWidth (100.0f));
-
-			// Draw the list of colors
-			DrawColorsInPalette (property);
-
-			EditorGUILayout.EndVertical (); // End Color Palette
-		}
+		EditorGUILayout.BeginVertical (GUI.skin.box);
+		
+		// Draw the PaletteName
+		EditorGUILayout.BeginHorizontal ();
+		SerializedProperty nameProperty = property.FindPropertyRelative ("PaletteName");
+		string paletteName = nameProperty.stringValue;
+		nameProperty.stringValue = EditorGUILayout.TextField (paletteName, EditorStyles.boldLabel, GUILayout.MaxWidth (100.0f));
+		EditorGUILayout.EndHorizontal ();
+		
+		// Draw the list of colors
+		DrawColorsInPalette (property);
+		
+		EditorGUILayout.EndVertical (); // End Color Palette
 
 		property.serializedObject.ApplyModifiedProperties ();
 	}
@@ -139,25 +130,5 @@ public class RBPaletteDrawer : PropertyDrawer
 		}
 
 		return listOfElements;
-	}
-	
-	private ReorderableList GetReorderableList (SerializedProperty serializedProperty)
-	{
-		if (colorList == null) {
-			colorList = new ReorderableList (serializedProperty.serializedObject, serializedProperty);
-			colorList.drawElementCallback += DrawListElement;
-		}
-		
-		return colorList;
-	}
-
-	void DrawListElement (Rect rect, int index, bool isActive, bool isFocused)
-	{
-		var element = colorList.serializedProperty.GetArrayElementAtIndex (index);
-		rect.y += 2;
-
-		EditorGUI.LabelField (new Rect (rect.x, rect.y, 60, EditorGUIUtility.singleLineHeight), "Color " + index);
-		element.colorValue = EditorGUI.ColorField (new Rect (rect.x + 60, rect.y, rect.width - 60, EditorGUIUtility.singleLineHeight),
-		                      element.colorValue);
 	}
 }
