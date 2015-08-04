@@ -85,7 +85,9 @@ public static class RBPaletteCreator {
 		// Extract and write the texture
 		if (writeFile) {
 			RBPalette paletteFromTexture = RBPalette.CreatePaletteFromTexture (selectedTexture);
+			paletteFromTexture.PaletteName = "Base Palette";
 			RBPaletteGroup paletteGroup = RBPaletteGroup.CreateInstance (paletteFromTexture);
+			paletteGroup.GroupName = selectedTexture.name + suffix;
 			return SaveRBPalette (paletteGroup, selectionPath, filename);
 		}
 

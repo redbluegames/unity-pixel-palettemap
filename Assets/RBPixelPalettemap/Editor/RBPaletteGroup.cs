@@ -6,7 +6,8 @@ using UnityEditor;
 
 public class RBPaletteGroup : ScriptableObject
 {
-	public string GroupName = "RBPaletteGroup";
+	const string defaultGroupName = "RBPaletteGroup";
+	public string GroupName;
 	[SerializeField]
 	List<RBPalette> palettes;
 
@@ -38,7 +39,11 @@ public class RBPaletteGroup : ScriptableObject
 			}
 		}
 	}
-	
+
+	/// <summary>
+	/// Niladic constructor, important for serialization of ScriptableObjects
+	/// </summary>
+	/// <returns>The instance.</returns>
 	public static RBPaletteGroup CreateInstance ()
 	{
 		RBPaletteGroup paletteGroup = ScriptableObject.CreateInstance<RBPaletteGroup> ();
@@ -49,14 +54,17 @@ public class RBPaletteGroup : ScriptableObject
 	public static RBPaletteGroup CreateInstance (RBPalette basePalette)
 	{
 		RBPaletteGroup paletteGroup = RBPaletteGroup.CreateInstance ();
-		paletteGroup.SetBasePalette (basePalette);
+		paletteGroup.Initialize (defaultGroupName, basePalette);
 		return paletteGroup;
 	}
 
-	void Initialize ()
+	void Initialize (string groupPaletteName = defaultGroupName, RBPalette basePalette = null)
 	{
 		palettes = new List<RBPalette> ();
-		RBPalette basePalette = new RBPalette ("Base Palette");
+		GroupName = groupPaletteName;
+		if (basePalette == null) {
+			basePalette = new RBPalette ("Base Palette");
+		}
 		palettes.Add (basePalette);
 	}
 
@@ -126,15 +134,17 @@ public class RBPaletteGroup : ScriptableObject
 		if(textureImporter == null) {
 			throw new System.NullReferenceException ("Failed to import file at specified path: " + fullPathToFile);
 		}
+		textureImporter.textureType = TextureImporterType.Advanced;
+		textureImporter.spriteImportMode = SpriteImportMode.None;
 		textureImporter.filterMode = FilterMode.Point;
 		textureImporter.textureFormat = TextureImporterFormat.RGBA32;
 		textureImporter.alphaIsTransparency = false;
 		textureImporter.mipmapEnabled = false;
 		textureImporter.npotScale = TextureImporterNPOTScale.None;
 		textureImporter.maxTextureSize = 256;
-		
+
 		// Force Unity to see the file and use the new import settings
-		AssetDatabase.ImportAsset (fullPathToFile); 
+		AssetDatabase.ImportAsset (fullPathToFile, ImportAssetOptions.ForceUpdate); 
 	}
 	
 	Texture2D CreateAsTexture ()

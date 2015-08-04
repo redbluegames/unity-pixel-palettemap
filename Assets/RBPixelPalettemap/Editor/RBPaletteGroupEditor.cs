@@ -44,7 +44,15 @@ public class RBPaletteGroupEditor : Editor {
 			string outputPath = GetPathToAsset (targetRBPaletteGroup);
 			string extension = ".png";
 			string filename = targetRBPaletteGroup.GroupName + extension;
-			targetRBPaletteGroup.WriteToFile (outputPath + filename, true);
+			try {
+				targetRBPaletteGroup.WriteToFile (outputPath + filename, false);
+			} catch (System.AccessViolationException) {
+				if (EditorUtility.DisplayDialog ("Warning!", 
+				                                 "This will overwrite the existing file, " + filename + 
+				                                 ". Are you sure you want to export the texture?", "Yes", "No")) {
+					targetRBPaletteGroup.WriteToFile (outputPath + filename, true);
+				}
+			}
 		}
 	}
 	

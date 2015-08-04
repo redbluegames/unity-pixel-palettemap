@@ -77,6 +77,7 @@ public class RBPalette
 	{
 		Color[] sourcePixels = sourceTexture.GetPixels ();
 		RBPalette palette = new RBPalette ();
+		palette.PaletteName = sourceTexture.name;
 		
 		// Get all unique colors
 		for (int i = 0; i < sourcePixels.Length; i++) {
