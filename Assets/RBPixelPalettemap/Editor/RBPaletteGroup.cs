@@ -11,11 +11,11 @@ public class RBPaletteGroup : ScriptableObject
 	[SerializeField]
 	List<RBPalette> palettes;
 
-	RBPalette basePalette { 
+	public RBPalette BasePalette { 
 		get {
 			return palettes [0];
 		}
-		set {
+		private set {
 			palettes [0] = value;
 		}
 	}
@@ -25,7 +25,7 @@ public class RBPaletteGroup : ScriptableObject
 			if (palettes == null || palettes.Count == 0) {
 				return 0;
 			} else {
-				return basePalette.Count;
+				return BasePalette.Count;
 			}
 		}
 	}
@@ -40,10 +40,6 @@ public class RBPaletteGroup : ScriptableObject
 		}
 	}
 
-	/// <summary>
-	/// Niladic constructor, important for serialization of ScriptableObjects
-	/// </summary>
-	/// <returns>The instance.</returns>
 	public static RBPaletteGroup CreateInstance ()
 	{
 		RBPaletteGroup paletteGroup = ScriptableObject.CreateInstance<RBPaletteGroup> ();
@@ -70,14 +66,14 @@ public class RBPaletteGroup : ScriptableObject
 
 	public void SetBasePalette (RBPalette basePalette)
 	{
-		this.basePalette = basePalette;
-		this.basePalette.PaletteName = "Base Palette";
+		this.BasePalette = basePalette;
+		this.BasePalette.PaletteName = "Base Palette";
 		// TODO: Extend or truncate existing palettes
 	}
 
 	public void AddPalette ()
 	{
-		RBPalette newPalette = new RBPalette (basePalette);
+		RBPalette newPalette = new RBPalette (BasePalette);
 		newPalette.PaletteName = "Unnamed";
 
 		palettes.Add (newPalette);

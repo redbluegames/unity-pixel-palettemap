@@ -7,36 +7,55 @@ public static class RBPaletteCreator {
 	const string suffix = "_PaletteGroup";
 
 	[MenuItem ("Assets/Create/RBPalette")]
-	public static RBPaletteGroup CreatePalette ()
+	public static RBPaletteGroup CreateEmptyPaletteGroup ()
 	{
-		int fileAppendix = -1;
 		string unformattedFilename = "RBPaletteGroup{0}.asset";
 		string formattedFilename = string.Empty;
 		string path = GetPathOfSelection ();
+		RBPaletteGroup createdGroup = null;
 		for (int i = 0; i < 100; i++) {
 			formattedFilename = string.Format (unformattedFilename, i);
-			if (!File.Exists (path + "/" + formattedFilename)) {
-				fileAppendix = i;
+			try {
+				createdGroup = CreatePaletteGroup (path, formattedFilename, false);
 				break;
+			} catch (IOException){
+				// Do nothing, move on to next index
 			}
 		}
-		if (fileAppendix >= 0) {
-			return CreatePalette (GetPathOfSelection (), formattedFilename);
-		} else {
+
+		if (createdGroup == null) {
 			Debug.LogError ("Failed to create file. Too many generic RBPaletteGroups exist in save location.");
-			return null;
 		}
+		return createdGroup;
 	}
 
-	static RBPaletteGroup CreatePalette (string path, string filename)
+	public static RBPaletteGroup CreatePaletteGroup (string path, string filename, bool overwriteExisting)
 	{
+		ValidateSaveLocation (path + filename, overwriteExisting);
+
 		RBPaletteGroup paletteAsset = RBPaletteGroup.CreateInstance ();
 		return SaveRBPalette (paletteAsset, path, filename);
+	}
+
+	public static RBPaletteGroup CreatePaletteGroup (string path, string filename, Texture2D sourceTexture, bool overwriteExisting)
+	{
+		ValidateSaveLocation (path + filename, overwriteExisting);
+
+		// Create a base palette from the Texture
+		RBPalette paletteFromTexture = RBPalette.CreatePaletteFromTexture (sourceTexture);
+		paletteFromTexture.PaletteName = "Base Palette";
+
+		// Create the paletteGroup with the base Palette
+		RBPaletteGroup paletteGroup = RBPaletteGroup.CreateInstance (paletteFromTexture);
+		paletteGroup.GroupName = sourceTexture.name + suffix;
+
+		return SaveRBPalette (paletteGroup, path, filename);
 	}
 	
 	static RBPaletteGroup SaveRBPalette (RBPaletteGroup palette, string path, string filename)
 	{
-		string fullpath = path + "/" + filename;
+		string fullpath = path + filename;
+
 		AssetDatabase.CreateAsset (palette, fullpath);
 		AssetDatabase.SaveAssets ();
 		
@@ -44,6 +63,13 @@ public static class RBPaletteCreator {
 		Selection.activeObject = palette;
 		
 		return palette;
+	}
+	
+	static void ValidateSaveLocation (string fullPathToFile, bool allowOverwrite)
+	{
+		if (!allowOverwrite && File.Exists (fullPathToFile)) {
+			throw new IOException ("File exists at save location: " + fullPathToFile);
+		}
 	}
 
 	static string GetPathOfSelection ()
@@ -59,39 +85,37 @@ public static class RBPaletteCreator {
 			}
 			break;
 		}
-
+		path += "/";
 		return path;
 	}
 	
 	[MenuItem ("Assets/ExtractPalette")]
-	public static RBPaletteGroup ExtractPalleteFromTexture ()
+	public static RBPaletteGroup ExtractPaletteFromSelection ()
 	{
 		Texture2D selectedTexture = (Texture2D) Selection.activeObject;
 		string selectionPath = GetPathOfSelection ();
-		string filename = selectedTexture.name + suffix + ".asset";
 
-		// Check for existing file and warn for overwrite
-		bool writeFile = false;
-		if (File.Exists (selectionPath + "/" + filename)) {
+		return ExtractPaletteFromTexture (selectedTexture, selectionPath);
+	}
+
+	public static RBPaletteGroup ExtractPaletteFromTexture (Texture2D extractTexture, string savePath, string filename = "")
+	{
+		if (string.IsNullOrEmpty (filename)) {
+			filename = extractTexture.name + suffix + ".asset";
+		}
+
+		RBPaletteGroup createdGroup = null;
+		try {
+			createdGroup = CreatePaletteGroup (savePath, filename, extractTexture, false);
+		} catch (IOException) {
 			if (EditorUtility.DisplayDialog ("Warning!", 
-			                                "This will overwrite the existing file, " + filename + 
+			                                 "This will overwrite the existing file, " + filename + 
 			                                 ". Are you sure you want to extract the palette?", "Yes", "No")) {
-				writeFile = true;
+				createdGroup = CreatePaletteGroup (savePath, filename, extractTexture, true);
 			}
-		} else {
-			writeFile = true;
 		}
 
-		// Extract and write the texture
-		if (writeFile) {
-			RBPalette paletteFromTexture = RBPalette.CreatePaletteFromTexture (selectedTexture);
-			paletteFromTexture.PaletteName = "Base Palette";
-			RBPaletteGroup paletteGroup = RBPaletteGroup.CreateInstance (paletteFromTexture);
-			paletteGroup.GroupName = selectedTexture.name + suffix;
-			return SaveRBPalette (paletteGroup, selectionPath, filename);
-		}
-
-		return null;
+		return createdGroup;
 	}
 	
 	[MenuItem ("Assets/ExtractPalette", true)]

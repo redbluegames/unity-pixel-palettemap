@@ -58,13 +58,20 @@ public class RBPalette
 
 	public bool ContainsColor (Color colorToFind)
 	{
+		return IndexOf (colorToFind) >= 0;
+	}
+
+	public int IndexOf (Color colorToFind)
+	{
+		int index = -1;
 		for (int i = 0; i < ColorsInPalette.Count; i++) {
 			if (ColorsInPalette [i] == colorToFind) {
-				return true;
+				index = i;
+				break;
 			}
 		}
-		
-		return false;
+
+		return index;
 	}
 
 	public int Count {
@@ -98,5 +105,34 @@ public class RBPalette
 			clearedColor = Color.clear;
 		}
 		return clearedColor;
+	}
+
+	public void SortByGrayscale ()
+	{
+		ColorsInPalette.Sort (CompareColorsByGrayscale);
+	}
+	
+	// Returns the "smaller" of the two colors by grayscale
+	static int CompareColorsByGrayscale (Color colorA, Color colorB)
+	{
+		// When one is alpha and the other isn't, the alpha'ed color is smaller
+		if (colorA.a < 1.0f && Mathf.Approximately (colorB.a, 1.0f)) {
+			return -1;
+		} else if (colorB.a < 1.0f && Mathf.Approximately (colorA.a, 1.0f)) {
+			return 1;
+		}
+		
+		if (colorA.grayscale < colorB.grayscale) {
+			return -1;
+		} else if (colorA.grayscale > colorB.grayscale) {
+			return 1;
+		} else {
+			// Colors are equal - decide ties by alpha (usually happens with black)
+			if (colorA.a < colorB.a) {
+				return -1;
+			} else {
+				return 1;
+			}
+		}
 	}
 }

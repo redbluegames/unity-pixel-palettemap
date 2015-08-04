@@ -26,7 +26,6 @@ namespace RedBlueTools
 {
 	public static class RBPaletteMapper
 	{
-
 		public static void ValidateSourceTexture (Texture2D sourceTexture)
 		{
 			TextureImporter textureImporter = AssetImporter.GetAtPath (AssetDatabase.GetAssetPath (sourceTexture)) as TextureImporter;
@@ -42,195 +41,47 @@ namespace RedBlueTools
 				throw new System.BadImageFormatException ("Source texture must be uncompressed (RGBA32)");
 			}
 		}
-	
-		public static void ValidatePaletteKeyTexture (Texture2D paletteKeyTexture)
+
+		public static void ValidatePaletteGroup (RBPaletteGroup paletteGroup)
 		{
-			TextureImporter textureImporter = AssetImporter.GetAtPath (AssetDatabase.GetAssetPath (paletteKeyTexture)) as TextureImporter;
-			if (!textureImporter.isReadable) {
-				throw new System.BadImageFormatException ("PaletteKey texture must be Read/Write enabled.");
-			}
-		
-			if (paletteKeyTexture.filterMode != FilterMode.Point) {
-				throw new System.BadImageFormatException ("PaletteKey texture must have Point filter mode.");
-			}
-		
-			if (paletteKeyTexture.format != TextureFormat.RGBA32) {
-				throw new System.BadImageFormatException ("PaletteKey texture must be uncompressed (RGBA32)");
-			}
+			// Nothing to validate as of right now.
 		}
 
-		public static void CreatePaletteMapAndKey (string outputPath, Texture2D sourceTexture, Texture2D paletteKeyTexture, 
+		public static void CreatePaletteMapAndKey (string outputPath, Texture2D sourceTexture, RBPaletteGroup suppliedPaletteGroup, 
 		                                           bool sortPaletteKey, bool overwriteExistingFiles, string paletteKeyFileName, string paletteMapFilename)
 		{
 			// If no palette key texture is provided, create a new one from the source image
-			PaletteKey paletteKey;
-			if (paletteKeyTexture == null) {
-				paletteKey = PaletteKey.CreatePaletteKeyFromTexture (sourceTexture);
+			RBPalette basePalette = null;
+			if (suppliedPaletteGroup == null) {
+				basePalette = RBPalette.CreatePaletteFromTexture (sourceTexture);
 				if (sortPaletteKey) {
-					paletteKey.SortByGrayscale ();
+					basePalette.SortByGrayscale ();
 				}
 			} else {
-				paletteKey = PaletteKey.CreatePaletteKeyFromTexture (paletteKeyTexture);
+				basePalette = suppliedPaletteGroup.BasePalette;
 			}
 
 			// Create the palette map from the palette key
-			PaletteMap palettemap = new PaletteMap (sourceTexture, paletteKey);
+			PaletteMap palettemap;
+			palettemap = new PaletteMap (sourceTexture, basePalette);
+			
+			// TODO: Sync PaletteGroup to match the actual colors in the texture.
 
-			// Write PaletteKey to disk
-			string paletteKeyFilenameWithExtension = paletteKeyFileName + ".png";
-			string fullPathToPaletteKeyFile = outputPath + paletteKeyFilenameWithExtension;
-			paletteKey.WriteToFile (fullPathToPaletteKeyFile, overwriteExistingFiles);
-		
+			if (suppliedPaletteGroup == null) {
+				// Write PaletteGroup to disk
+				try {
+					string paletteGroupFilename = paletteKeyFileName + ".asset";
+					RBPaletteGroup createdGroup = RBPaletteCreator.CreatePaletteGroup (outputPath, paletteGroupFilename, overwriteExistingFiles);
+					createdGroup.SetBasePalette (basePalette);
+				} catch (IOException) {
+					throw new System.IO.IOException ("Failed to write PaletteMap. A PaletteGroup already exists by the name: " + paletteKeyFileName);
+				}
+			}
+
 			// Write PaletteMap to disk
 			string paletteMapFilenameWithExtension = paletteMapFilename + ".png";
 			string fullPathToPaletteMapFile = outputPath + paletteMapFilenameWithExtension;
 			palettemap.WriteToFile (fullPathToPaletteMapFile, overwriteExistingFiles);
-		}
-
-		class PaletteKey
-		{
-			List<Color> colorsInPalette;
-
-			public int Count {
-				get {
-					return colorsInPalette.Count;
-				}
-			}
-		
-			public PaletteKey ()
-			{
-				colorsInPalette = new List<Color> ();
-			}
-		
-			public PaletteKey (List<Color> colorsInPalette)
-			{
-				this.colorsInPalette = new List<Color> (colorsInPalette);
-			}
-		
-			public void AddColor (Color color)
-			{
-				if (colorsInPalette.Count > byte.MaxValue) {
-					throw new System.NotSupportedException ("Tried to Add more colors to palette key than are currently" +
-						" supported due to PaletteMap's Alpha8 format.");
-				}
-				colorsInPalette.Add (color);
-			}
-		
-			public bool ContainsColor (Color colorToFind)
-			{
-				return colorsInPalette.Contains (colorToFind);
-			}
-
-			public int IndexOf (Color colorInPalette)
-			{
-				Color colorToLookup = ClearRGBIfNoAlpha (colorInPalette);
-				return colorsInPalette.IndexOf (colorToLookup);
-			}
-
-			public Color GetColor (int index)
-			{
-				return colorsInPalette [index];
-			}
-		
-			public static PaletteKey CreatePaletteKeyFromTexture (Texture2D sourceTexture)
-			{
-				Color[] sourcePixels = sourceTexture.GetPixels ();
-				PaletteKey paletteKey = new PaletteKey ();
-			
-				// Get all unique colors
-				for (int i = 0; i < sourcePixels.Length; i++) {
-					Color colorAtSource = ClearRGBIfNoAlpha (sourcePixels [i]);
-					if (!paletteKey.ContainsColor (colorAtSource)) {
-						paletteKey.AddColor (colorAtSource);
-					}
-				}
-
-				return paletteKey;
-			}
-
-			// Clears out the RGB when fully transparent so that we don't get lots of versions of transparent in the palette
-			static Color ClearRGBIfNoAlpha (Color colorToClear)
-			{
-				Color clearedColor = colorToClear;
-				if (Mathf.Approximately (clearedColor.a, 0.0f)) {
-					clearedColor = Color.clear;
-				}
-				return clearedColor;
-			}
-		
-			Texture2D CreateAsTexture ()
-			{
-				// Write the colors into a texture
-				Texture2D paletteKeyAsTexture = new Texture2D (colorsInPalette.Count, 1, TextureFormat.RGBA32, false);
-				paletteKeyAsTexture.hideFlags = HideFlags.HideAndDontSave;
-				paletteKeyAsTexture.SetPixels (colorsInPalette.ToArray ());
-				paletteKeyAsTexture.Apply ();
-			
-				return paletteKeyAsTexture;
-			}
-		
-			public void WriteToFile (string fullPathToFile, bool allowOverwriting)
-			{
-				if (File.Exists (fullPathToFile) && !allowOverwriting) {
-					throw new System.AccessViolationException ("Tried to write PaletteKey but file already exists. " +
-						"\nFile Path: " + fullPathToFile);
-				}
-
-				Texture2D keyAsTexture = CreateAsTexture ();
-				try {
-					byte[] outTextureData = keyAsTexture.EncodeToPNG ();
-					File.WriteAllBytes (fullPathToFile, outTextureData);
-				} catch (System.Exception e) {
-					throw new System.IO.IOException ("Encountered IO exception during PaletteKey write: " + e.Message);
-				}
-			
-				// Force refresh so that we can set its Import settings immediately
-				AssetDatabase.ImportAsset (fullPathToFile); 
-			
-				// Assign correct settings to the file
-				TextureImporter textureImporter = AssetImporter.GetAtPath (fullPathToFile) as TextureImporter;
-				if(textureImporter == null) {
-					throw new System.NullReferenceException ("Failed to import file at specified path: " + fullPathToFile);
-				}
-				textureImporter.filterMode = FilterMode.Point;
-				textureImporter.textureFormat = TextureImporterFormat.RGBA32;
-				textureImporter.alphaIsTransparency = false;
-				textureImporter.mipmapEnabled = false;
-				textureImporter.npotScale = TextureImporterNPOTScale.None;
-				textureImporter.maxTextureSize = 256;
-			
-				// Force Unity to see the file and use the new import settings
-				AssetDatabase.ImportAsset (fullPathToFile); 
-			}
-
-			public void SortByGrayscale ()
-			{
-				colorsInPalette.Sort (CompareColorsByGrayscale);
-			}
-
-			// Returns the "smaller" of the two colors by grayscale
-			static int CompareColorsByGrayscale (Color colorA, Color colorB)
-			{
-				// When one is alpha and the other isn't, the alpha'ed color is smaller
-				if (colorA.a < 1.0f && Mathf.Approximately (colorB.a, 1.0f)) {
-					return -1;
-				} else if (colorB.a < 1.0f && Mathf.Approximately (colorA.a, 1.0f)) {
-					return 1;
-				}
-
-				if (colorA.grayscale < colorB.grayscale) {
-					return -1;
-				} else if (colorA.grayscale > colorB.grayscale) {
-					return 1;
-				} else {
-					// Colors are equal - decide ties by alpha (usually happens with black)
-					if (colorA.a < colorB.a) {
-						return -1;
-					} else {
-						return 1;
-					}
-				}
-			}
 		}
 	
 		class PaletteMap
@@ -239,27 +90,27 @@ namespace RedBlueTools
 			int width;
 			int height;
 		
-			public PaletteMap (Texture2D sourceTexture, PaletteKey paletteKey)
+			public PaletteMap (Texture2D sourceTexture, RBPalette basePalette)
 			{
 				this.width = sourceTexture.width;
 				this.height = sourceTexture.height;
-			
+				
 				Color[] sourcePixels = sourceTexture.GetPixels ();
 				pixels = new Color[sourcePixels.Length];
-			
+				
 				// Remap original colors to point to indeces in the palette
 				for (int i = 0; i < sourcePixels.Length; i++) {
 					// Get the alpha value by looking it up in the paletteKey
-					int paletteIndex = paletteKey.IndexOf (sourcePixels [i]);
+					int paletteIndex = basePalette.IndexOf (sourcePixels [i]);
 					if (paletteIndex < 0) {
-						throw new System.ArgumentException ("Encountered color in source PaletteMap image that is not in the PaletteKey." +
-							"Color in PaletteMap: " + (Color32)sourcePixels [i]);
+						throw new System.ArgumentException ("Encountered color in source PaletteMap image that is not in the base palette." +
+						                                    "Color in PaletteMap: " + (Color32)sourcePixels [i]);
 					}
 					float alpha;
-					if (paletteKey.Count == 1) {
+					if (basePalette.Count == 1) {
 						alpha = 0.0f;
 					} else {
-						alpha = paletteIndex / (float)(paletteKey.Count - 1);
+						alpha = paletteIndex / (float)(basePalette.Count - 1);
 						// For some reason, 1.0f wraps around in the shader. Maybe it's epsilon issues.
 						alpha = Mathf.Clamp (alpha, 0.0f, 0.99f);
 					}

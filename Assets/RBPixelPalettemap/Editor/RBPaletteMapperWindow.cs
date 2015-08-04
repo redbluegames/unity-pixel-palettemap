@@ -55,7 +55,7 @@ namespace RedBlueTools
 				lastSourceTexture = sourceTexture;
 
 				paletteMapFilename = sourceTexture.name + "_PaletteMap";
-				paletteKeyFilename = sourceTexture.name + "_PaletteKey";
+				paletteKeyFilename = sourceTexture.name + "_PaletteGroup";
 			}
 
 			if(sourceTexture != null) {
@@ -67,15 +67,15 @@ namespace RedBlueTools
 			switch (paletteKeyOption) {
 			case PaletteKeyOption.GenerateNewPaletteKey:
 				suppliedPalleteKey = null;
+				if(sourceTexture != null) {
+					paletteKeyFilename = EditorGUILayout.TextField("Output Filename", paletteKeyFilename);
+				}
 				sortPalette = EditorGUILayout.Toggle ("Sort PaletteKey", sortPalette);
 				break;
 			case PaletteKeyOption.SupplyCustomPaletteKey:
-				suppliedPalleteKey = EditorGUILayout.ObjectField ("Palette Key Texture", suppliedPalleteKey, typeof(Texture2D), false);
+				suppliedPalleteKey = EditorGUILayout.ObjectField ("Linked Palette Group", suppliedPalleteKey, typeof(RBPaletteGroup), false);
 				sortPalette = false;
 				break;
-			}
-			if(sourceTexture != null) {
-				paletteKeyFilename = EditorGUILayout.TextField("Output Filename", paletteKeyFilename);
 			}
 
 			GUILayout.Label ("Options", EditorStyles.boldLabel);
@@ -97,18 +97,18 @@ namespace RedBlueTools
 				}
 
 				// Validate or skip Palette Key
-				Texture2D inPaletteKey = null;
+				RBPaletteGroup inPaletteKey = null;
 				if (paletteKeyOption == PaletteKeyOption.SupplyCustomPaletteKey) {
 					if (suppliedPalleteKey == null) {
 						Debug.LogError ("RBPaletteMapper Error: Trying to use custom palette key but no palette key specified." +
-							"\nPlease select a texture to use as the Palette Key.");
+							"\nPlease select a RBPaletteGroup to use as the Palette Key.");
 						return;
 					}
-					inPaletteKey = (Texture2D)suppliedPalleteKey;
+					inPaletteKey = (RBPaletteGroup)suppliedPalleteKey;
 					try {
-						RBPaletteMapper.ValidatePaletteKeyTexture (inPaletteKey);
-					} catch (System.BadImageFormatException e) {
-						Debug.LogError ("RBPaletteMapper Error: " + e.Message);
+						RBPaletteMapper.ValidatePaletteGroup (inPaletteKey);
+					} catch {
+						Debug.LogError ("Unknown PaletteMap Error encountered while Validating supplied PaletteGroup.");
 						return;
 					}
 				}
