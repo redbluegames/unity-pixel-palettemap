@@ -15,6 +15,9 @@ public class RBPaletteGroupEditor : Editor {
 
 		RBPaletteGroup targetRBPaletteGroup = (RBPaletteGroup) target;
 
+		EditorGUILayout.Space ();
+		EditorGUILayout.Separator ();
+
 		if( GUILayout.Button( "Add Color", GUILayout.ExpandWidth(false)) )
 		{
 			targetRBPaletteGroup.AddColor ();
@@ -25,13 +28,13 @@ public class RBPaletteGroupEditor : Editor {
 			targetRBPaletteGroup.AddPalette ();
 		}
 
-		colorIndex = EditorGUILayout.IntField ("Color index: ", colorIndex);
+		colorIndex = EditorGUILayout.IntSlider ("Color index: ", colorIndex, 0, targetRBPaletteGroup.NumColorsInPalette - 1);
 		if( GUILayout.Button( "Remove Color At Index", GUILayout.ExpandWidth(false)) )
 		{
 			targetRBPaletteGroup.RemoveColorAtIndex (colorIndex);
 		}
-
-		paletteIndex = EditorGUILayout.IntField ("Palette index: ", paletteIndex);
+		
+		paletteIndex = EditorGUILayout.IntSlider ("Palette index: ", paletteIndex, 0, targetRBPaletteGroup.Count - 1);
 		if( GUILayout.Button( "Remove Palette At Index", GUILayout.ExpandWidth(false)) )
 		{
 			targetRBPaletteGroup.RemovePaletteAtIndex (paletteIndex);
