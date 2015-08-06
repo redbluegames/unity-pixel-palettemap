@@ -7,6 +7,7 @@ using System.Collections;
 public class RBPalette
 {
 	public string PaletteName;
+	public bool Locked = false;
 	[SerializeField]
 	List<Color> ColorsInPalette;
 
@@ -26,6 +27,10 @@ public class RBPalette
 
 	void SetColor (int index, Color color)
 	{
+		if (Locked) {
+			throw new System.AccessViolationException ("Can't Set Color to on RBPalette. RBPalette is Locked.");
+		}
+
 		ColorsInPalette [index] = color;
 	}
 	

@@ -8,6 +8,7 @@ public class RBPaletteGroup : ScriptableObject
 {
 	const string defaultGroupName = "RBPaletteGroup";
 	public string GroupName;
+	public bool Locked = true;
 	[SerializeField]
 	List<RBPalette> palettes;
 
@@ -81,6 +82,10 @@ public class RBPaletteGroup : ScriptableObject
 
 	public void AddColor ()
 	{
+		if (Locked) {
+			throw new System.AccessViolationException ("Can't Add Color to RBPaletteGroup. PaletteGroup is Locked.");
+		}
+
 		foreach (RBPalette palette in palettes) {
 			palette.AddColor (Color.white);
 		}
@@ -88,6 +93,9 @@ public class RBPaletteGroup : ScriptableObject
 
 	public void RemoveColorAtIndex (int index)
 	{
+		if (Locked) {
+			throw new System.AccessViolationException ("Can't Add Color to RBPaletteGroup. PaletteGroup is Locked.");
+		}
 		if (index < 0 || index >= NumColorsInPalette) {
 			throw new System.IndexOutOfRangeException 
 				(string.Format ("Trying to remove color at invalid index, {0}", index));
@@ -99,6 +107,11 @@ public class RBPaletteGroup : ScriptableObject
 
 	public void RemovePaletteAtIndex (int index)
 	{
+		if (Locked && index == 0) {
+			throw new System.AccessViolationException ("Trying to remove base palette from Locked palette group. Locked palette groups " +
+				"must have a Base Palette.");
+		}
+
 		if (index < 0 || index >= Count) {
 			throw new System.IndexOutOfRangeException 
 				(string.Format ("Trying to remove palette at invalid index, {0}", index));

@@ -52,17 +52,20 @@ public class RBPaletteDrawer : PropertyDrawer
 		SerializedProperty nameProperty = property.FindPropertyRelative ("PaletteName");
 		string paletteName = nameProperty.stringValue;
 		nameProperty.stringValue = EditorGUILayout.TextField (paletteName, EditorStyles.boldLabel, GUILayout.MaxWidth (100.0f));
+		
+		SerializedProperty lockedProperty = property.FindPropertyRelative ("Locked");
+		lockedProperty.boolValue = EditorGUILayout.Toggle ("Locked", lockedProperty.boolValue);
 		EditorGUILayout.EndHorizontal ();
 		
 		// Draw the list of colors
-		DrawColorsInPalette (property);
+		DrawColorsInPalette (property, lockedProperty.boolValue);
 		
 		EditorGUILayout.EndVertical (); // End Color Palette
-
+		
 		property.serializedObject.ApplyModifiedProperties ();
 	}
 
-	void DrawColorsInPalette (SerializedProperty property)
+	void DrawColorsInPalette (SerializedProperty property, bool isLocked)
 	{
 		// Get the colors as properties
 		SerializedProperty listProperty = property.FindPropertyRelative ("ColorsInPalette");
@@ -79,20 +82,24 @@ public class RBPaletteDrawer : PropertyDrawer
 			int numColorsOnThisLine = Mathf.Min (colorsRemainingInPalette, numColorsPerLine);
 			List<SerializedProperty> propertiesOnThisLine = 
 				colorProperties.GetRange (startingLineColorIndex, numColorsOnThisLine);
-			DrawColorPaletteLine (propertiesOnThisLine);
+			DrawColorPaletteLine (propertiesOnThisLine, isLocked);
 		}
 		EditorGUILayout.EndVertical (); // End Colors
 
 	}
 
-	void DrawColorPaletteLine (List<SerializedProperty> colorProperties)
+	void DrawColorPaletteLine (List<SerializedProperty> colorProperties, bool isLocked)
 	{
 		EditorGUILayout.BeginHorizontal ();
 		for (int i = 0; i < colorProperties.Count; i++) {
 			var colorPropertyAtIndex = colorProperties [i];
-			colorPropertyAtIndex.colorValue = EditorGUILayout.ColorField (GUIContent.none, colorPropertyAtIndex.colorValue,
+			Color changedColor;
+			changedColor = EditorGUILayout.ColorField (GUIContent.none, colorPropertyAtIndex.colorValue,
 				false, true, false, new ColorPickerHDRConfig (0.0f, 1.0f, 0.0f, 1.0f), 
 				GUILayout.Width (widthPerColor));
+			if (!isLocked) {
+				colorPropertyAtIndex.colorValue = changedColor;
+			}
 		}
 		EditorGUILayout.EndHorizontal (); // End Row
 	}

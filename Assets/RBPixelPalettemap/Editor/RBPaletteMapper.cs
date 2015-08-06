@@ -74,6 +74,8 @@ namespace RedBlueTools
 					RBPaletteGroup createdGroup = RBPaletteCreator.CreatePaletteGroup (outputPath, paletteGroupFilename, overwriteExistingFiles);
 					createdGroup.GroupName = paletteKeyFileName;
 					createdGroup.SetBasePalette (basePalette);
+					createdGroup.BasePalette.Locked = true;
+					createdGroup.Locked = true;
 				} catch (IOException) {
 					throw new System.IO.IOException ("Failed to write PaletteMap. A PaletteGroup already exists by the name: " + paletteKeyFileName);
 				}

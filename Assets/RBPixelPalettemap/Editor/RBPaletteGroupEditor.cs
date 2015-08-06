@@ -15,16 +15,11 @@ public class RBPaletteGroupEditor : Editor {
 		RBPaletteGroup targetRBPaletteGroup = (RBPaletteGroup) target;
 
 		EditorGUILayout.Space ();
-		EditorGUILayout.Separator ();
+		EditorGUILayout.LabelField ("Colors", EditorStyles.boldLabel);
 
 		if( GUILayout.Button( "Add Color", GUILayout.ExpandWidth(false)) )
 		{
 			targetRBPaletteGroup.AddColor ();
-		}
-
-		if( GUILayout.Button( "Add Palette", GUILayout.ExpandWidth(false)) )
-		{
-			targetRBPaletteGroup.AddPalette ();
 		}
 
 		colorIndex = EditorGUILayout.IntSlider ("Color index: ", colorIndex, 0, targetRBPaletteGroup.NumColorsInPalette - 1);
@@ -32,12 +27,22 @@ public class RBPaletteGroupEditor : Editor {
 		{
 			targetRBPaletteGroup.RemoveColorAtIndex (colorIndex);
 		}
+
+		EditorGUILayout.Space ();
+		EditorGUILayout.LabelField ("Palettes", EditorStyles.boldLabel);
+		
+		if( GUILayout.Button( "Add Palette", GUILayout.ExpandWidth(false)) )
+		{
+			targetRBPaletteGroup.AddPalette ();
+		}
 		
 		paletteIndex = EditorGUILayout.IntSlider ("Palette index: ", paletteIndex, 0, targetRBPaletteGroup.Count - 1);
 		if( GUILayout.Button( "Remove Palette At Index", GUILayout.ExpandWidth(false)) )
 		{
 			targetRBPaletteGroup.RemovePaletteAtIndex (paletteIndex);
 		}
+		EditorGUILayout.Space ();
+		EditorGUILayout.LabelField ("Utilities", EditorStyles.boldLabel);
 
 		if( GUILayout.Button( "Export As Texture", GUILayout.ExpandWidth(false)) )
 		{
