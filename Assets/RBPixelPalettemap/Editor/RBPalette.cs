@@ -104,8 +104,13 @@ public class RBPalette
 		return palette;
 	}
 
-	// Clears out the RGB when fully transparent so that we don't get lots of versions of transparent in the palette
-	static Color ClearRGBIfNoAlpha (Color colorToClear)
+
+	/// <summary>
+	/// Clears the RGB if there is no alpha. This is useful to keep duplicate full-transparent colors out of the palette
+	/// </summary>
+	/// <returns>If color has no alpha returns black with 0 alpha, otherwise returns the original color.</returns>
+	/// <param name="colorToClear">Color to clear.</param>
+	public static Color ClearRGBIfNoAlpha (Color colorToClear)
 	{
 		Color clearedColor = colorToClear;
 		if (Mathf.Approximately (clearedColor.a, 0.0f)) {

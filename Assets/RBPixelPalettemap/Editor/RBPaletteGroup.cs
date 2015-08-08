@@ -10,7 +10,8 @@ public class RBPaletteGroup : ScriptableObject
 	public string GroupName;
 	public bool Locked = true;
 	[SerializeField]
-	List<RBPalette> palettes;
+	List<RBPalette>
+		palettes;
 
 	public RBPalette BasePalette { 
 		get {
@@ -87,7 +88,7 @@ public class RBPaletteGroup : ScriptableObject
 		}
 
 		foreach (RBPalette palette in palettes) {
-			palette.AddColor (Color.white);
+			palette.AddColor (Color.magenta);
 		}
 	}
 
@@ -119,12 +120,52 @@ public class RBPaletteGroup : ScriptableObject
 		palettes.RemoveAt (index);
 	}
 
+	public void SyncWithTexture (Texture2D sourceTexture)
+	{
+		Color[] sourcePixels = sourceTexture.GetPixels ();
+
+		// Unlock the PaletteGroup so that we can edit it.
+		bool wasLocked = Locked;
+		Locked = false;
+		bool wasPaletteLocked = BasePalette.Locked;
+		BasePalette.Locked = false;
+		
+		// Add new colors from the texture into the Palette
+		List<Color> seenColors = new List<Color>();
+		for (int i = 0; i < sourcePixels.Length; i++) {
+			Color colorAtSource = RBPalette.ClearRGBIfNoAlpha (sourcePixels [i]);
+			int index = BasePalette.IndexOf (colorAtSource);
+			bool colorNotFound = index < 0;
+			if (colorNotFound) {
+				AddColor ();
+				BasePalette [BasePalette.Count - 1] = colorAtSource; // Note this assumes color is added to the end...
+			} else {
+				// Add unique seen colors to list of seen colors
+				if (!seenColors.Contains (colorAtSource)) {
+					seenColors.Add (colorAtSource);
+				}
+			}
+		}
+
+		// Remove unused colors, back to front to avoid shifting indeces
+		for (int i = BasePalette.Count -1; i >= 0; i--) {
+			bool colorWasSeen = seenColors.Contains(BasePalette[i]);
+			if (!colorWasSeen) {
+				RemoveColorAtIndex (i);
+			}
+		}
+
+		// Relock the palette group
+		Locked = wasLocked;
+		BasePalette.Locked = wasPaletteLocked;
+	}
+
 	#region Output Functions
 	public void WriteToFile (string fullPathToFile, bool allowOverwriting)
 	{
 		if (File.Exists (fullPathToFile) && !allowOverwriting) {
 			throw new System.AccessViolationException ("Tried to write PaletteGroup but file already exists. " +
-			                                           "\nFile Path: " + fullPathToFile);
+				"\nFile Path: " + fullPathToFile);
 		}
 		
 		Texture2D paletteGroupAsTexture = CreateAsTexture ();
@@ -140,7 +181,7 @@ public class RBPaletteGroup : ScriptableObject
 		
 		// Assign correct settings to the file
 		TextureImporter textureImporter = AssetImporter.GetAtPath (fullPathToFile) as TextureImporter;
-		if(textureImporter == null) {
+		if (textureImporter == null) {
 			throw new System.NullReferenceException ("Failed to import file at specified path: " + fullPathToFile);
 		}
 		textureImporter.textureType = TextureImporterType.Advanced;
@@ -173,7 +214,7 @@ public class RBPaletteGroup : ScriptableObject
 		for (int paletteIndex = 0; paletteIndex < Count; paletteIndex++) {
 			for (int colorIndex = 0; colorIndex < NumColorsInPalette; colorIndex++) {
 				int i = paletteIndex * NumColorsInPalette + colorIndex;
-				colorsAsArray[i] = palettes[paletteIndex][colorIndex];
+				colorsAsArray [i] = palettes [paletteIndex] [colorIndex];
 			}
 		}
 		return colorsAsArray;

@@ -118,23 +118,24 @@ namespace RedBlueTools
 					RBPaletteMapper.CreatePaletteMapAndKey (path, inTexture, inPaletteKey, sortPalette, overwriteExistingFiles, paletteKeyFilename, paletteMapFilename);
 				
 					Debug.Log ("<color=green>Palette Map and Key for file " + inTexture.name + " created successfully</color>");
+					// TODO: Better error handling messages
 				} catch (System.NotSupportedException e) {
-					LogError (e.Message);
+					LogError (e.Message, e);
 				} catch (System.ArgumentException e) {
-					LogError (e.Message);
+					LogError (e.Message, e);
 				} catch (System.AccessViolationException e) {
-					LogError (e.Message);
+					LogError (e.Message, e);
 				} catch (System.IO.IOException e) {
-					LogError ("Encountered IO Exception: " + e.Message);
+					LogError ("Encountered IO Exception: " + e.Message, e);
 				} catch (System.Exception e) {
-					LogError ("Encountered unknown error: " + e.Message);
+					LogError ("Encountered unknown error: " + e.Message, e);
 				}
 			}
 		}
 
-		void LogError (string message)
+		void LogError (string message, System.Exception e)
 		{
-			Debug.LogError ("PaletteMap Error: " + message);
+			Debug.LogError ("PaletteMap Error: " + message + "Error: " + e);
 		}
 
 		string GetPathToAsset (Object asset)

@@ -58,6 +58,8 @@ namespace RedBlueTools
 					basePalette.SortByGrayscale ();
 				}
 			} else {
+				// Sync the palette group up with the texture
+				suppliedPaletteGroup.SyncWithTexture (sourceTexture);
 				basePalette = suppliedPaletteGroup.BasePalette;
 			}
 
@@ -106,8 +108,11 @@ namespace RedBlueTools
 					// Get the alpha value by looking it up in the paletteKey
 					int paletteIndex = basePalette.IndexOf (sourcePixels [i]);
 					if (paletteIndex < 0) {
+						Vector2 coordinateFromBottomLeft = new Vector2 (i % width, i / height);
+						Vector2 coordinateFromTopLeft = new Vector2 (coordinateFromBottomLeft.x, height - coordinateFromBottomLeft.y);
 						throw new System.ArgumentException ("Encountered color in source PaletteMap image that is not in the base palette." +
-						                                    "Color in PaletteMap: " + (Color32)sourcePixels [i]);
+						                                    " Color in PaletteMap: " + (Color32)sourcePixels [i] + 
+						                                    " At coordinate: " + coordinateFromTopLeft);
 					}
 					float alpha;
 					if (basePalette.Count == 1) {
