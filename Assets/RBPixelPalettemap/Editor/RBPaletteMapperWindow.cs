@@ -113,7 +113,7 @@ namespace RedBlueTools
 					}
 				}
 
-				string path = GetPathToAsset (inTexture);
+				string path = AssetDatabaseUtility.GetAssetDirectory (inTexture);
 				try {
 					RBPaletteMapper.CreatePaletteMapAndKey (path, inTexture, inPaletteKey, sortPalette, overwriteExistingFiles, paletteKeyFilename, paletteMapFilename);
 				
@@ -136,17 +136,6 @@ namespace RedBlueTools
 		void LogError (string message, System.Exception e)
 		{
 			Debug.LogError ("PaletteMap Error: " + message + "Error: " + e);
-		}
-
-		string GetPathToAsset (Object asset)
-		{
-			string path = AssetDatabase.GetAssetPath (asset);
-
-			// Strip filename out from asset path
-			string[] directories = path.Split ('/');
-			path = path.TrimEnd (directories [directories.Length - 1].ToCharArray ());
-
-			return path;
 		}
 	}
 }

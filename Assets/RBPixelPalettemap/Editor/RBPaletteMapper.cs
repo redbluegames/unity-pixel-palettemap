@@ -66,8 +66,6 @@ namespace RedBlueTools
 			// Create the palette map from the palette key
 			PaletteMap palettemap;
 			palettemap = new PaletteMap (sourceTexture, basePalette);
-			
-			// TODO: Sync PaletteGroup to match the actual colors in the texture.
 
 			if (suppliedPaletteGroup == null) {
 				// Write PaletteGroup to disk
@@ -139,7 +137,7 @@ namespace RedBlueTools
 			public void WriteToFile (string fullPath, bool allowOverwriting)
 			{
 				if (File.Exists (fullPath) && !allowOverwriting) {
-					throw new System.AccessViolationException ("Tried to write PaletteKey but file already exists. " +
+					throw new System.AccessViolationException ("Tried to write PaletteMap but file already exists. " +
 						"\nFile Path: " + fullPath);
 				}
 

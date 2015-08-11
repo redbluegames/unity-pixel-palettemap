@@ -6,12 +6,12 @@ public static class RBPaletteCreator {
 
 	const string suffix = "_PaletteGroup";
 
-	[MenuItem ("Assets/Create/RBPalette")]
-	public static RBPaletteGroup CreateEmptyPaletteGroup ()
+	[MenuItem ("Assets/Create/RBPaletteMap/RBPalette")]
+	static RBPaletteGroup CreatePaletteGroup ()
 	{
 		string unformattedFilename = "RBPaletteGroup{0}.asset";
 		string formattedFilename = string.Empty;
-		string path = GetPathOfSelection ();
+		string path = AssetDatabaseUtility.GetDirectoryOfSelection ();
 		RBPaletteGroup createdGroup = null;
 		for (int i = 0; i < 100; i++) {
 			formattedFilename = string.Format (unformattedFilename, i);
@@ -24,8 +24,14 @@ public static class RBPaletteCreator {
 		}
 
 		if (createdGroup == null) {
-			Debug.LogError ("Failed to create file. Too many generic RBPaletteGroups exist in save location.");
+			throw new IOException ("Failed to create file. Too many generic RBPaletteGroups exist in save location.");
 		}
+
+		// Unlock standalone palette groups by default.
+		createdGroup.Locked = false;
+
+		AssetDatabaseUtility.SelectObject (createdGroup);
+
 		return createdGroup;
 	}
 
@@ -34,7 +40,7 @@ public static class RBPaletteCreator {
 		ValidateSaveLocation (path + filename, overwriteExisting);
 
 		RBPaletteGroup paletteAsset = RBPaletteGroup.CreateInstance ();
-		return SaveRBPalette (paletteAsset, path, filename);
+		return (RBPaletteGroup) AssetDatabaseUtility.SaveObject (paletteAsset, path, filename);
 	}
 
 	public static RBPaletteGroup CreatePaletteGroup (string path, string filename, Texture2D sourceTexture, bool overwriteExisting)
@@ -46,23 +52,9 @@ public static class RBPaletteCreator {
 		paletteFromTexture.PaletteName = "Base Palette";
 
 		// Create the paletteGroup with the base Palette
-		RBPaletteGroup paletteGroup = RBPaletteGroup.CreateInstance (paletteFromTexture);
-		paletteGroup.GroupName = sourceTexture.name + suffix;
+		RBPaletteGroup paletteGroup = RBPaletteGroup.CreateInstance (sourceTexture.name + suffix, paletteFromTexture);
 
-		return SaveRBPalette (paletteGroup, path, filename);
-	}
-	
-	static RBPaletteGroup SaveRBPalette (RBPaletteGroup palette, string path, string filename)
-	{
-		string fullpath = path + filename;
-
-		AssetDatabase.CreateAsset (palette, fullpath);
-		AssetDatabase.SaveAssets ();
-		
-		EditorUtility.FocusProjectWindow ();
-		Selection.activeObject = palette;
-		
-		return palette;
+		return (RBPaletteGroup) AssetDatabaseUtility.SaveObject (paletteGroup, path, filename);
 	}
 	
 	static void ValidateSaveLocation (string fullPathToFile, bool allowOverwrite)
@@ -70,32 +62,18 @@ public static class RBPaletteCreator {
 		if (!allowOverwrite && File.Exists (fullPathToFile)) {
 			throw new IOException ("File exists at save location: " + fullPathToFile);
 		}
-	}
-
-	static string GetPathOfSelection ()
-	{
-		// TODO THIS DOESN"T ALWAYS WORK.
-		string path = "Assets";
-		foreach (UnityEngine.Object obj in Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.Assets))
-		{
-			path = AssetDatabase.GetAssetPath(obj);
-			if (File.Exists(path))
-			{
-				path = Path.GetDirectoryName(path);
-			}
-			break;
-		}
-		path += "/";
-		return path;
-	}
+	} 
 	
-	[MenuItem ("Assets/ExtractPalette")]
+	[MenuItem ("Assets/RBPaletteMap/ExtractPalette")]
 	public static RBPaletteGroup ExtractPaletteFromSelection ()
 	{
 		Texture2D selectedTexture = (Texture2D) Selection.activeObject;
-		string selectionPath = GetPathOfSelection ();
+		string selectionPath = AssetDatabaseUtility.GetDirectoryOfSelection ();
 
-		return ExtractPaletteFromTexture (selectedTexture, selectionPath);
+		RBPaletteGroup extractedPaletteGroup = ExtractPaletteFromTexture (selectedTexture, selectionPath);
+		AssetDatabaseUtility.SelectObject (extractedPaletteGroup);
+
+		return extractedPaletteGroup;
 	}
 
 	public static RBPaletteGroup ExtractPaletteFromTexture (Texture2D extractTexture, string savePath, string filename = "")
@@ -118,8 +96,8 @@ public static class RBPaletteCreator {
 		return createdGroup;
 	}
 	
-	[MenuItem ("Assets/ExtractPalette", true)]
-	public static bool IsValidTargetForPalette ()
+	[MenuItem ("Assets/RBPaletteMap/ExtractPalette", true)]
+	static bool IsSelectionValidTargetForPalette ()
 	{
 		if (Selection.activeObject == null) {
 			return false;

@@ -6,7 +6,7 @@ using UnityEditor;
 
 public class RBPaletteGroup : ScriptableObject
 {
-	const string defaultGroupName = "RBPaletteGroup";
+	public const string DefaultGroupName = "RBPaletteGroup";
 	public string GroupName;
 	public bool Locked = true;
 	[SerializeField]
@@ -42,21 +42,14 @@ public class RBPaletteGroup : ScriptableObject
 		}
 	}
 
-	public static RBPaletteGroup CreateInstance ()
+	public static RBPaletteGroup CreateInstance (string groupPaletteName = DefaultGroupName, RBPalette basePalette = null)
 	{
 		RBPaletteGroup paletteGroup = ScriptableObject.CreateInstance<RBPaletteGroup> ();
-		paletteGroup.Initialize ();
-		return paletteGroup;
-	}
-	
-	public static RBPaletteGroup CreateInstance (RBPalette basePalette)
-	{
-		RBPaletteGroup paletteGroup = RBPaletteGroup.CreateInstance ();
-		paletteGroup.Initialize (defaultGroupName, basePalette);
+		paletteGroup.Initialize (groupPaletteName, basePalette);
 		return paletteGroup;
 	}
 
-	void Initialize (string groupPaletteName = defaultGroupName, RBPalette basePalette = null)
+	public void Initialize (string groupPaletteName = DefaultGroupName, RBPalette basePalette = null)
 	{
 		palettes = new List<RBPalette> ();
 		GroupName = groupPaletteName;
