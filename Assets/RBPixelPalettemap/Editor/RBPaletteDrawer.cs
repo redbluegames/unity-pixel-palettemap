@@ -4,6 +4,7 @@ using UnityEditorInternal;
 using System.Collections;
 using System.Collections.Generic;
 
+/*
 [CustomPropertyDrawer (typeof(RBPalette))]
 public class RBPaletteDrawer : PropertyDrawer
 {
@@ -139,3 +140,4 @@ public class RBPaletteDrawer : PropertyDrawer
 		return listOfElements;
 	}
 }
+*/
