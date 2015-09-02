@@ -8,9 +8,14 @@ using System.Collections.Generic;
 public class RBPaletteGroupEditor : Editor {
 	
 	int colorIndex = 0;
-	int paletteIndex = 0;
 
 	bool isListLocked = false;
+	#region Sizing
+	Vector2 colorPadding = new Vector2 (10.0f, 5.0f);
+	float palettePadding = 5.0f;
+	float colorWidth = 50.0f;
+	float labelWidth = 100.0f;
+	#endregion
 
 	private ReorderableList list;
 	
@@ -19,33 +24,17 @@ public class RBPaletteGroupEditor : Editor {
 		                           serializedObject.FindProperty("palettes"), 
 		                           true, true, true, true);
 		list.drawElementCallback = DrawListElement;
-
-		list.onCanRemoveCallback = CanRemovePaletteFromList;
-	}
-
-	void DrawListElement (Rect rect, int index, bool isActive, bool isFocused)
-	{
-		var element = list.serializedProperty.GetArrayElementAtIndex(index);
-		rect.y += 2;
-		float labelWidth = 100.0f;
-		SerializedProperty paletteName = element.FindPropertyRelative ("PaletteName");
-		Rect labelRect = new Rect (rect.x, rect.y, labelWidth, EditorGUIUtility.singleLineHeight);
-		paletteName.stringValue = EditorGUI.TextField (labelRect, paletteName.stringValue);
 		
-		SerializedProperty listProperty = element.FindPropertyRelative ("ColorsInPalette");
-		float swatchwidth = 50.0f;
-		float spacing = 10.0f;
-		List<SerializedProperty> colorProperties = GetListFromSerializedProperty (listProperty);
-		for (int i = 0; i < colorProperties.Count; i++) {
-			float startX = i * swatchwidth;
-			Rect colorRect = new Rect (rect.x + labelRect.width + startX + spacing, rect.y, 
-			                           swatchwidth, EditorGUIUtility.singleLineHeight);
-			colorProperties[i].colorValue = EditorGUI.ColorField (colorRect, colorProperties[i].colorValue);
-			
-			//EditorGUIUtility.DrawColorSwatch (colorRect, Color.red);
-		}
+		// TODO: We can keep them from removing, but can we keep them from addign?
+		list.onCanRemoveCallback = CanRemovePaletteFromList;
+		
+		// TODO: Don't allow them to reorder Base Palette
+		
+	//	var element = list.serializedProperty.GetArrayElementAtIndex(0);
+	///	SerializedProperty listProperty = element.FindPropertyRelative ("ColorsInPalette");
+	//	numColorsInPalette = listProperty.intValue;
 	}
-	
+
 	bool CanRemovePaletteFromList (ReorderableList list) 
 	{
 		// Don't let them remove the base palette
@@ -57,24 +46,65 @@ public class RBPaletteGroupEditor : Editor {
 		return !isListLocked;
 	}
 
-	int GetNumColorsPerLine ()
+	float GetElementHeight ()
 	{
-		float colorWidth = 50.0f;
-		return Mathf.FloorToInt (Screen.width / colorWidth);
+		RBPaletteGroup targetRBPaletteGroup = (RBPaletteGroup) target;
+		int numlines = Mathf.CeilToInt (targetRBPaletteGroup.NumColorsInPalette / (float) GetMaxNumColorsPerLine ());
+		float sizePerLine = EditorGUIUtility.singleLineHeight + palettePadding;
+		return numlines * sizePerLine;
 	}
+	
+	int GetMaxNumColorsPerLine ()
+	{
+		float effectiveColorWidth = colorWidth + colorPadding.x;
+		float windowWidth = Screen.width;
+		float availableWidth = windowWidth - labelWidth;
 
+		return Mathf.FloorToInt (availableWidth / effectiveColorWidth);
+	}
+	
+	void DrawListElement (Rect rect, int index, bool isActive, bool isFocused)
+	{
+		var element = list.serializedProperty.GetArrayElementAtIndex(index);
+		rect.y += 2;
+		
+		// Draw label
+		SerializedProperty paletteName = element.FindPropertyRelative ("PaletteName");
+		Rect labelRect = new Rect (rect.x, rect.y, labelWidth, EditorGUIUtility.singleLineHeight);
+		bool isNameEditable = index > 0;
+		if (isNameEditable) {
+			paletteName.stringValue = EditorGUI.TextField (labelRect, paletteName.stringValue);
+		} else {
+			EditorGUI.LabelField (labelRect, paletteName.stringValue);
+		}
+		
+		SerializedProperty colorsAsList = element.FindPropertyRelative ("ColorsInPalette");
+		int numColorsPerLine = GetMaxNumColorsPerLine ();
+		List<SerializedProperty> colorProperties = GetListFromSerializedProperty (colorsAsList);
+		for (int i = 0; i < colorProperties.Count; i++) {
+			float startX = labelRect.width + (i % numColorsPerLine) * colorWidth + colorPadding.x;
+			float startY = Mathf.FloorToInt (i / numColorsPerLine) * EditorGUIUtility.singleLineHeight;
+			Rect colorRect = new Rect (rect.x + startX, rect.y + startY, 
+			                           colorWidth, EditorGUIUtility.singleLineHeight);
+			colorProperties[i].colorValue = EditorGUI.ColorField (colorRect, colorProperties[i].colorValue);
+			
+			//EditorGUIUtility.DrawColorSwatch (colorRect, colorProperties[i].colorValue);
+		}
+	}
 	public override void OnInspectorGUI ()
 	{
+		RBPaletteGroup targetRBPaletteGroup = (RBPaletteGroup) target;
+
 		//DrawDefaultInspector ();
-		
 		serializedObject.Update();
+		
+		list.elementHeight = GetElementHeight ();
+
 		list.DoLayoutList();
 
 		SerializedProperty lockedProperty = serializedObject.FindProperty ("Locked");
 		lockedProperty.boolValue = EditorGUILayout.Toggle ("Locked", lockedProperty.boolValue);
 		isListLocked = lockedProperty.boolValue;
-
-		RBPaletteGroup targetRBPaletteGroup = (RBPaletteGroup) target;
 
 		EditorGUILayout.Space ();
 		EditorGUILayout.LabelField ("Colors", EditorStyles.boldLabel);
@@ -90,6 +120,8 @@ public class RBPaletteGroupEditor : Editor {
 			targetRBPaletteGroup.RemoveColorAtIndex (colorIndex);
 		}
 
+		// TODO: Remove Palette Editing once it works through + / - buttons
+		/*
 		EditorGUILayout.Space ();
 		EditorGUILayout.LabelField ("Palettes", EditorStyles.boldLabel);
 		
@@ -103,6 +135,7 @@ public class RBPaletteGroupEditor : Editor {
 		{
 			targetRBPaletteGroup.RemovePaletteAtIndex (paletteIndex);
 		}
+		*/
 		EditorGUILayout.Space ();
 		EditorGUILayout.LabelField ("Utilities", EditorStyles.boldLabel);
 
