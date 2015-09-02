@@ -11,7 +11,8 @@ public class RBPaletteGroupEditor : Editor {
 
 	bool isListLocked = false;
 	#region Sizing
-	Vector2 colorPadding = new Vector2 (10.0f, 5.0f);
+	float colorPaddingX = 5.0f;
+	float colorSpacing = 5.0f;
 	float palettePadding = 5.0f;
 	float colorWidth = 50.0f;
 	float labelWidth = 100.0f;
@@ -24,23 +25,13 @@ public class RBPaletteGroupEditor : Editor {
 		list = new ReorderableList(serializedObject, 
 		                           serializedObject.FindProperty("palettes"), 
 		                           true, true, true, true);
+		list.onCanRemoveCallback = CanRemovePaletteFromList;
+		list.drawHeaderCallback = (Rect rect) => {  
+			EditorGUI.LabelField(rect, ((RBPaletteGroup)target).GroupName + " - Palette Mode");
+		};
 		list.drawElementCallback = DrawListElement;
 
-		list.onCanRemoveCallback = CanRemovePaletteFromList;
-		
-		// TODO: Don't allow them to reorder Base Palette
-		list.onReorderCallback = OnReorder;
-	}
-
-	void OnReorder (ReorderableList reorderedList)
-	{
-		List<SerializedProperty> oldList = GetListFromSerializedProperty (serializedObject.FindProperty ("palettes"));
-		List<SerializedProperty> newList = GetListFromSerializedProperty (reorderedList.serializedProperty);
-		Debug.Log ("Reordered List: " + newList[0].displayName);
-		Debug.Log ("Old List: " + oldList[0].displayName);
-		if (newList[0] != oldList[0]) {
-			reorderedList = list;
-		}
+		// TODO: Don't let them reorder Base Palette
 	}
 
 	bool CanRemovePaletteFromList (ReorderableList list) 
@@ -63,12 +54,14 @@ public class RBPaletteGroupEditor : Editor {
 	
 	int GetMaxNumColorsPerLine ()
 	{
-		float effectiveColorWidth = colorWidth + colorPadding.x;
+		// w = (n-1) * s + N * c + 2p  [solve for n = (w - 2p + s) / (s + c)]
+		// Where n = numColors, s = spacing, c = colorwidth, p = padding, w = availableWidth
 		float windowWidth = Screen.width;
-		float handleWidth = list.draggable ? 20.0f : 0.0f;
-		float availableWidth = windowWidth - labelWidth - handleWidth;
+		float handleWidth = list.draggable ? 25.0f : 0.0f;
+		float availableWidth = windowWidth - labelWidth - handleWidth - (2 * colorPaddingX);
+		int numColors = Mathf.FloorToInt ((availableWidth - (2 * colorPaddingX) + colorSpacing) / (colorSpacing + colorWidth));
 
-		return Mathf.FloorToInt (availableWidth / effectiveColorWidth);
+		return numColors;
 	}
 	
 	void DrawListElement (Rect rect, int index, bool isActive, bool isFocused)
@@ -90,7 +83,8 @@ public class RBPaletteGroupEditor : Editor {
 		int numColorsPerLine = GetMaxNumColorsPerLine ();
 		List<SerializedProperty> colorProperties = GetListFromSerializedProperty (colorsAsList);
 		for (int i = 0; i < colorProperties.Count; i++) {
-			float startX = labelRect.width + (i % numColorsPerLine) * colorWidth + colorPadding.x;
+			int colorIndexOnLine = i % numColorsPerLine;
+			float startX = labelRect.width + colorPaddingX + colorIndexOnLine * (colorWidth + colorSpacing);
 			float startY = Mathf.FloorToInt (i / numColorsPerLine) * EditorGUIUtility.singleLineHeight;
 			Rect colorRect = new Rect (rect.x + startX, rect.y + startY, 
 			                           colorWidth, EditorGUIUtility.singleLineHeight);
