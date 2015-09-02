@@ -18,31 +18,38 @@ public class RBPaletteGroupEditor : Editor {
 	#endregion
 
 	private ReorderableList list;
+	List<RBPalette> lastValidPaletteList;
 	
 	private void OnEnable() {
 		list = new ReorderableList(serializedObject, 
 		                           serializedObject.FindProperty("palettes"), 
 		                           true, true, true, true);
 		list.drawElementCallback = DrawListElement;
-		
-		// TODO: We can keep them from removing, but can we keep them from addign?
+
 		list.onCanRemoveCallback = CanRemovePaletteFromList;
 		
 		// TODO: Don't allow them to reorder Base Palette
-		
-	//	var element = list.serializedProperty.GetArrayElementAtIndex(0);
-	///	SerializedProperty listProperty = element.FindPropertyRelative ("ColorsInPalette");
-	//	numColorsInPalette = listProperty.intValue;
+		list.onReorderCallback = OnReorder;
+	}
+
+	void OnReorder (ReorderableList reorderedList)
+	{
+		List<SerializedProperty> oldList = GetListFromSerializedProperty (serializedObject.FindProperty ("palettes"));
+		List<SerializedProperty> newList = GetListFromSerializedProperty (reorderedList.serializedProperty);
+		Debug.Log ("Reordered List: " + newList[0].displayName);
+		Debug.Log ("Old List: " + oldList[0].displayName);
+		if (newList[0] != oldList[0]) {
+			reorderedList = list;
+		}
 	}
 
 	bool CanRemovePaletteFromList (ReorderableList list) 
 	{
 		// Don't let them remove the base palette
-		if (list.count <= 1) {
+		if (list.index == 0) {
 			return false;
 		}
 
-		// Hmm this keeps them from removing but not adding
 		return !isListLocked;
 	}
 
@@ -58,7 +65,8 @@ public class RBPaletteGroupEditor : Editor {
 	{
 		float effectiveColorWidth = colorWidth + colorPadding.x;
 		float windowWidth = Screen.width;
-		float availableWidth = windowWidth - labelWidth;
+		float handleWidth = list.draggable ? 20.0f : 0.0f;
+		float availableWidth = windowWidth - labelWidth - handleWidth;
 
 		return Mathf.FloorToInt (availableWidth / effectiveColorWidth);
 	}
@@ -91,6 +99,15 @@ public class RBPaletteGroupEditor : Editor {
 			//EditorGUIUtility.DrawColorSwatch (colorRect, colorProperties[i].colorValue);
 		}
 	}
+
+	void SetGroupLocked (bool locked)
+	{
+		isListLocked = locked;
+		list.displayAdd = !locked;
+		list.displayRemove = !locked;
+		list.draggable = !locked;
+	}
+
 	public override void OnInspectorGUI ()
 	{
 		RBPaletteGroup targetRBPaletteGroup = (RBPaletteGroup) target;
@@ -104,7 +121,7 @@ public class RBPaletteGroupEditor : Editor {
 
 		SerializedProperty lockedProperty = serializedObject.FindProperty ("Locked");
 		lockedProperty.boolValue = EditorGUILayout.Toggle ("Locked", lockedProperty.boolValue);
-		isListLocked = lockedProperty.boolValue;
+		SetGroupLocked (lockedProperty.boolValue);
 
 		EditorGUILayout.Space ();
 		EditorGUILayout.LabelField ("Colors", EditorStyles.boldLabel);
