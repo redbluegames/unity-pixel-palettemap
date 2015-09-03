@@ -67,14 +67,14 @@ public class RBPaletteGroupEditor : Editor {
 	{
 		// w = (n-1) * s + N * c + 2p  [solve for n = (w - 2p + s) / (s + c)]
 		// Where n = numColors, s = spacing, c = colorwidth, p = padding, w = availableWidth
-		float effectiveColorWidth = colorWidth;
 		float windowWidth = Screen.width;
-		float reorderableListDefaultPadding = 5.0f;
-		windowWidth -= reorderableListDefaultPadding;
-		float handleWidth = list.draggable ? 25.0f : 0.0f;
+		float reorderableListDefaultPadding = ReorderableList.Defaults.padding;
+		windowWidth -= (2 * reorderableListDefaultPadding);
+
+		float handleWidth = list.draggable ? ReorderableList.Defaults.dragHandleWidth : 0.0f;
 		float availableWidth = windowWidth - labelWidth - handleWidth;
 		int numColors = Mathf.FloorToInt ((availableWidth - (2 * colorPaddingX) + colorSpacing) /
-		                                  (colorSpacing + effectiveColorWidth));
+		                                  (colorSpacing + colorWidth));
 		
 		return numColors;
 	}
@@ -105,7 +105,7 @@ public class RBPaletteGroupEditor : Editor {
 			Rect colorRect = new Rect (rect.x + startX, rect.y + startY, 
 			                           colorWidth, EditorGUIUtility.singleLineHeight);
 			colorProperties[i].colorValue = EditorGUI.ColorField (colorRect, colorProperties[i].colorValue);
-			
+
 			//EditorGUIUtility.DrawColorSwatch (colorRect, colorProperties[i].colorValue);
 		}
 	}
