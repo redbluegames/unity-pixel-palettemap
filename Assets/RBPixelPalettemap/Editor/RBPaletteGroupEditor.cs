@@ -123,16 +123,9 @@ public class RBPaletteGroupEditor : Editor {
 		
 		Rect bottomRect = new Rect (rect.x, rect.y + rect.height - barHeight, rect.width, barHeight);
 		EditorGUI.DrawRect (bottomRect, new Color (0.2f, 0.2f, 0.2f));
-		
-		Vector2 padding = new Vector2 (1.0f, 1.0f);
-		Rect backgroundRect = new Rect (rect.x + padding.x, rect.y + padding.y, 
-			rect.width - (2 * padding.x), rect.height - (2 * padding.y));
 
-		// Background colors approximate editor skin. This would need to change if
-		// editor colors change.
-		Color backgroundColor = EditorGUIUtility.isProSkin ? new Color (0.3f, 0.3f, 0.3f) :
-			new Color (0.9f, 0.9f, 0.9f);
-		EditorGUI.DrawRect (backgroundRect, backgroundColor);
+		// Draw default background to handle highlighting and selection.
+		ReorderableList.defaultBehaviours.DrawElementBackground (rect, index, isActive, isFocused, true);
 	}
 	#endregion
 
