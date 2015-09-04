@@ -87,7 +87,7 @@ public class RBPaletteGroupEditor : Editor {
 		// Draw label
 		SerializedProperty paletteName = element.FindPropertyRelative ("PaletteName");
 		Rect labelRect = new Rect (rect.x, rect.y, labelWidth, EditorGUIUtility.singleLineHeight);
-		bool isNameEditable = index > 0;
+		bool isNameEditable = index > 0 && !isListLocked;
 		if (isNameEditable) {
 			paletteName.stringValue = EditorGUI.TextField (labelRect, paletteName.stringValue);
 		} else {
