@@ -15,7 +15,10 @@ public class PaletteMapJob : ScriptableObject
 	public static PaletteMapJob CreatePaletteMapJob ()
 	{
 		PaletteMapJob job = PaletteMapJob.CreateInstance ();
-		return (PaletteMapJob) AssetDatabaseUtility.SaveAndSelectObject (job, AssetDatabaseUtility.GetDirectoryOfSelection (), "RBPaletteMapJob.asset");
+		string filename = "RBPaletteMapJob.asset";
+		string directory = AssetDatabaseUtility.GetDirectoryOfSelection ();
+		string availableFilename = AssetDatabaseUtility.GetNextUnusedFilename (directory, filename);
+		return (PaletteMapJob) AssetDatabaseUtility.SaveAndSelectObject (job, directory, availableFilename);
 	}
 	
 	public static PaletteMapJob CreateInstance ()
