@@ -9,22 +9,14 @@ public static class RBPaletteCreator {
 	[MenuItem ("Assets/Create/RBPaletteMap/RBPalette")]
 	static RBPaletteGroup CreatePaletteGroup ()
 	{
-		string unformattedFilename = "RBPaletteGroup{0}.asset";
-		string formattedFilename = string.Empty;
 		string path = AssetDatabaseUtility.GetDirectoryOfSelection ();
+		string filename = "RBPaletteGroup.asset";
+		string nextAvailableFilename = AssetDatabaseUtility.GetNextUnusedFilename (path, filename);
 		RBPaletteGroup createdGroup = null;
-		for (int i = 0; i < 100; i++) {
-			formattedFilename = string.Format (unformattedFilename, i);
-			try {
-				createdGroup = CreatePaletteGroup (path, formattedFilename, false);
-				break;
-			} catch (IOException){
-				// Do nothing, move on to next index
-			}
-		}
-
-		if (createdGroup == null) {
-			throw new IOException ("Failed to create file. Too many generic RBPaletteGroups exist in save location.");
+		try {
+			createdGroup = CreatePaletteGroup (path, nextAvailableFilename, false);
+		} catch (IOException e){
+			throw new IOException ("Failed to create file. Encountered exception: " + e);
 		}
 
 		// Unlock standalone palette groups by default.
