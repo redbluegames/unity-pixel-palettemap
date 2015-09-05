@@ -2,6 +2,8 @@ Unity-Pixel-Palettemap
 ================
 Pixel Palettemap "palettizes" textures, allowing them to be used with a shader for alternate color schemes and palette swapping.
 
+NOTE This read me is out of date. I will update it when I'm finished with major outstanding features and I've figured out the final workflow.
+
 Overview
 ================
 In games we often want to colorize the same 2D image many different ways. Maybe we want to have several color variants for playable characters, like in Super Smash Brothers. Or maybe we want to let players dye parts of their armor. One solution to this is to draw separate sprite sheets for each color variation, but that has the con of using more memory and more importantly, difficult upkeep. When you want to make a change you have to change every version of the texture. And if we want to allow many combinations, like a custom hat color, custom cape color, and custom armor color, it would be virtually impossible to draw every permutation. You could instead use color tinting on a black and white texture but that will only allow you to make all colors in the image a shade of one color. Maybe you want blonde hair and a blue cape. To solve these issues, we can use a color indexed image.
