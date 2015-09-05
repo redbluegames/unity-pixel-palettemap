@@ -157,7 +157,7 @@ public class RBPaletteGroupEditor : Editor {
 
 		if( GUILayout.Button( "Add Color", GUILayout.ExpandWidth(false)) )
 		{
-			targetRBPaletteGroup.AddColor ();
+			targetRBPaletteGroup.AddColor (RBPaletteGroup.DefaultNewColor);
 		}
 
 		colorIndex = EditorGUILayout.IntSlider ("Color index: ", colorIndex, 0, targetRBPaletteGroup.NumColorsInPalette - 1);

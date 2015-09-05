@@ -48,15 +48,12 @@ namespace RedBlueTools
 		}
 
 		public static void CreatePaletteMapAndKey (string outputPath, Texture2D sourceTexture, RBPaletteGroup suppliedPaletteGroup, 
-		                                           bool sortPaletteKey, bool overwriteExistingFiles, string paletteKeyFileName, string paletteMapFilename)
+		                                           bool overwriteExistingFiles, string paletteKeyFileName, string paletteMapFilename)
 		{
 			// If no palette key texture is provided, create a new one from the source image
 			RBPalette basePalette = null;
 			if (suppliedPaletteGroup == null) {
 				basePalette = RBPalette.CreatePaletteFromTexture (sourceTexture);
-				if (sortPaletteKey) {
-					basePalette.SortByGrayscale ();
-				}
 			} else {
 				// Sync the palette group up with the texture
 				suppliedPaletteGroup.SyncWithTexture (sourceTexture);

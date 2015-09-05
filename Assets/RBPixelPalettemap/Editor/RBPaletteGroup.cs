@@ -7,6 +7,7 @@ using UnityEditor;
 public class RBPaletteGroup : ScriptableObject
 {
 	public const string DefaultGroupName = "RBPaletteGroup";
+	public static Color DefaultNewColor = Color.magenta;
 	public string GroupName;
 	public bool Locked = true;
 	[SerializeField]
@@ -76,15 +77,19 @@ public class RBPaletteGroup : ScriptableObject
 		palettes.Add (newPalette);
 	}
 
-	public void AddColor ()
+	public void AddColor (Color colorToAdd)
 	{
 		if (Locked) {
 			throw new System.AccessViolationException ("Can't Add Color to RBPaletteGroup. PaletteGroup is Locked.");
 		}
 
+		// Add magenta for all the palettes that are getting a new color
 		foreach (RBPalette palette in palettes) {
 			palette.AddColor (Color.magenta);
 		}
+
+		// Set base color to the desired color or default
+		BasePalette [BasePalette.Count - 1] = colorToAdd;
 	}
 
 	public void RemoveColorAtIndex (int index)
@@ -115,39 +120,70 @@ public class RBPaletteGroup : ScriptableObject
 		palettes.RemoveAt (index);
 	}
 
-	public void SyncWithTexture (Texture2D sourceTexture)
+	public class TextureDiff
 	{
-		Color[] sourcePixels = sourceTexture.GetPixels ();
+		public List<Color> ColorsNotInPalette;
+		public List<Color> ColorsNotInTexture;
 
-		// Unlock the PaletteGroup so that we can edit it.
-		bool wasLocked = Locked;
-		Locked = false;
-		bool wasPaletteLocked = BasePalette.Locked;
-		BasePalette.Locked = false;
-		
-		// Add new colors from the texture into the Palette
-		List<Color> seenColors = new List<Color>();
+		public TextureDiff ()
+		{
+			ColorsNotInPalette = new List<Color> ();
+			ColorsNotInTexture = new List<Color> ();
+		}
+	}
+
+	public TextureDiff DiffWithTexture (Texture2D textureToDiff)
+	{
+		Color[] sourcePixels = textureToDiff.GetPixels ();
+		TextureDiff diff = new TextureDiff ();
+
+		// first find Colors in texture that aren't in palette
+		List<Color> colorsInBoth = new List<Color> ();
 		for (int i = 0; i < sourcePixels.Length; i++) {
 			Color colorAtSource = RBPalette.ClearRGBIfNoAlpha (sourcePixels [i]);
 			int index = BasePalette.IndexOf (colorAtSource);
 			bool colorNotFound = index < 0;
 			if (colorNotFound) {
-				AddColor ();
-				BasePalette [BasePalette.Count - 1] = colorAtSource; // Note this assumes color is added to the end...
+				bool colorAlreadyAdded = diff.ColorsNotInPalette.Contains (colorAtSource);
+				if (!colorAlreadyAdded) {
+					diff.ColorsNotInPalette.Add (colorAtSource);
+				}
 			} else {
-				// Add unique seen colors to list of seen colors
-				if (!seenColors.Contains (colorAtSource)) {
-					seenColors.Add (colorAtSource);
+				// Keep track of colors in palette that are also found in the texture.
+				if (!colorsInBoth.Contains (colorAtSource)) {
+					colorsInBoth.Add (colorAtSource);
 				}
 			}
 		}
 
-		// Remove unused colors, back to front to avoid shifting indeces
-		for (int i = BasePalette.Count -1; i >= 0; i--) {
-			bool colorWasSeen = seenColors.Contains(BasePalette[i]);
+		// Find Colors in palette that were never seen
+		for (int i = 0; i < BasePalette.Count; i++) {
+			bool colorWasSeen = colorsInBoth.Contains(BasePalette[i]);
 			if (!colorWasSeen) {
-				RemoveColorAtIndex (i);
+				diff.ColorsNotInTexture.Add (BasePalette[i]);
 			}
+		}
+		
+		return diff;
+	}
+
+	public void SyncWithTexture (Texture2D sourceTexture)
+	{
+		// Unlock the PaletteGroup so that we can edit it.
+		bool wasLocked = Locked;
+		Locked = false;
+		bool wasPaletteLocked = BasePalette.Locked;
+		BasePalette.Locked = false;
+
+		// Add new colors to the palette
+		TextureDiff diff = DiffWithTexture (sourceTexture);
+		for (int i = 0; i < diff.ColorsNotInPalette.Count; i++) {
+			AddColor (diff.ColorsNotInPalette[i]);
+		}
+
+		for (int i = 0; i < diff.ColorsNotInTexture.Count; i++) {
+			int unusedColorIndex = BasePalette.IndexOf (diff.ColorsNotInTexture[i]);
+			RemoveColorAtIndex (unusedColorIndex);
 		}
 
 		// Relock the palette group

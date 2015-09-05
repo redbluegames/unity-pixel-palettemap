@@ -64,7 +64,7 @@ public class PaletteMapJobEditor : Editor {
 		EditorGUI.BeginDisabledGroup (generationDisabled);
 		if (GUILayout.Button ("Generate PaletteMap")) {
 			try {
-				RBPaletteMapper.CreatePaletteMapAndKey (path, targetJob.SourceTexture, targetJob.PaletteGroup, false, targetJob.OverwriteExistingPaletteMap, 
+				RBPaletteMapper.CreatePaletteMapAndKey (path, targetJob.SourceTexture, targetJob.PaletteGroup, targetJob.OverwriteExistingPaletteMap, 
 				                                        "Key", targetJob.PaletteMapName);
 				Debug.Log ("<color=green>Palette Map created successfully for job: </color>" + targetJob.name + 
 				           "\n<color=green>Updated PaletteGroup: </color>" + targetJob.PaletteGroup);

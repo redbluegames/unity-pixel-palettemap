@@ -119,35 +119,6 @@ public class RBPalette
 		return clearedColor;
 	}
 
-	public void SortByGrayscale ()
-	{
-		ColorsInPalette.Sort (CompareColorsByGrayscale);
-	}
-	
-	// Returns the "smaller" of the two colors by grayscale
-	static int CompareColorsByGrayscale (Color colorA, Color colorB)
-	{
-		// When one is alpha and the other isn't, the alpha'ed color is smaller
-		if (colorA.a < 1.0f && Mathf.Approximately (colorB.a, 1.0f)) {
-			return -1;
-		} else if (colorB.a < 1.0f && Mathf.Approximately (colorA.a, 1.0f)) {
-			return 1;
-		}
-		
-		if (colorA.grayscale < colorB.grayscale) {
-			return -1;
-		} else if (colorA.grayscale > colorB.grayscale) {
-			return 1;
-		} else {
-			// Colors are equal - decide ties by alpha (usually happens with black)
-			if (colorA.a < colorB.a) {
-				return -1;
-			} else {
-				return 1;
-			}
-		}
-	}
-
 	public override string ToString ()
 	{
 		string fullString = "";

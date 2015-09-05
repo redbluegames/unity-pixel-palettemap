@@ -115,7 +115,7 @@ namespace RedBlueTools
 
 				string path = AssetDatabaseUtility.GetAssetDirectory (inTexture);
 				try {
-					RBPaletteMapper.CreatePaletteMapAndKey (path, inTexture, inPaletteKey, sortPalette, overwriteExistingFiles, paletteKeyFilename, paletteMapFilename);
+					RBPaletteMapper.CreatePaletteMapAndKey (path, inTexture, inPaletteKey, overwriteExistingFiles, paletteKeyFilename, paletteMapFilename);
 				
 					Debug.Log ("<color=green>Palette Map and Key for file " + inTexture.name + " created successfully</color>");
 					// TODO: Better error handling messages
