@@ -19,6 +19,12 @@ public class RBPalette
 			SetColor (index, value);
 		}
 	}
+	
+	public int Count {
+		get {
+			return ColorsInPalette.Count;
+		}
+	}
 
 	Color GetColor (int index)
 	{
@@ -28,7 +34,7 @@ public class RBPalette
 	void SetColor (int index, Color color)
 	{
 		if (Locked) {
-			throw new System.AccessViolationException ("Can't Set Color to on RBPalette. RBPalette is Locked.");
+			throw new System.AccessViolationException ("Can't Set Color on RBPalette. RBPalette is Locked.");
 		}
 
 		ColorsInPalette [index] = color;
@@ -81,12 +87,6 @@ public class RBPalette
 		return index;
 	}
 
-	public int Count {
-		get {
-			return ColorsInPalette.Count;
-		}
-	}
-
 	public static RBPalette CreatePaletteFromTexture (Texture2D sourceTexture)
 	{
 		Color[] sourcePixels = sourceTexture.GetPixels ();
@@ -110,7 +110,7 @@ public class RBPalette
 	/// </summary>
 	/// <returns>If color has no alpha returns black with 0 alpha, otherwise returns the original color.</returns>
 	/// <param name="colorToClear">Color to clear.</param>
-	public static Color ClearRGBIfNoAlpha (Color colorToClear)
+	static Color ClearRGBIfNoAlpha (Color colorToClear)
 	{
 		Color clearedColor = colorToClear;
 		if (Mathf.Approximately (clearedColor.a, 0.0f)) {

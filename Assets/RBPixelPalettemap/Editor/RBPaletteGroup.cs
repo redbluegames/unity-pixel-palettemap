@@ -120,50 +120,10 @@ public class RBPaletteGroup : ScriptableObject
 		palettes.RemoveAt (index);
 	}
 
-	public class TextureDiff
+	public RBPaletteDiff DiffWithTexture (Texture2D textureToDiff)
 	{
-		public List<Color> ColorsNotInPalette;
-		public List<Color> ColorsNotInTexture;
-
-		public TextureDiff ()
-		{
-			ColorsNotInPalette = new List<Color> ();
-			ColorsNotInTexture = new List<Color> ();
-		}
-	}
-
-	public TextureDiff DiffWithTexture (Texture2D textureToDiff)
-	{
-		Color[] sourcePixels = textureToDiff.GetPixels ();
-		TextureDiff diff = new TextureDiff ();
-
-		// first find Colors in texture that aren't in palette
-		List<Color> colorsInBoth = new List<Color> ();
-		for (int i = 0; i < sourcePixels.Length; i++) {
-			Color colorAtSource = RBPalette.ClearRGBIfNoAlpha (sourcePixels [i]);
-			int index = BasePalette.IndexOf (colorAtSource);
-			bool colorNotFound = index < 0;
-			if (colorNotFound) {
-				bool colorAlreadyAdded = diff.ColorsNotInPalette.Contains (colorAtSource);
-				if (!colorAlreadyAdded) {
-					diff.ColorsNotInPalette.Add (colorAtSource);
-				}
-			} else {
-				// Keep track of colors in palette that are also found in the texture.
-				if (!colorsInBoth.Contains (colorAtSource)) {
-					colorsInBoth.Add (colorAtSource);
-				}
-			}
-		}
-
-		// Find Colors in palette that were never seen
-		for (int i = 0; i < BasePalette.Count; i++) {
-			bool colorWasSeen = colorsInBoth.Contains(BasePalette[i]);
-			if (!colorWasSeen) {
-				diff.ColorsNotInTexture.Add (BasePalette[i]);
-			}
-		}
-		
+		RBPalette paletteFromTexture = RBPalette.CreatePaletteFromTexture (textureToDiff);
+		RBPaletteDiff diff = RBPaletteDiff.Diff (BasePalette, paletteFromTexture);
 		return diff;
 	}
 
@@ -176,13 +136,14 @@ public class RBPaletteGroup : ScriptableObject
 		BasePalette.Locked = false;
 
 		// Add new colors to the palette
-		TextureDiff diff = DiffWithTexture (sourceTexture);
-		for (int i = 0; i < diff.ColorsNotInPalette.Count; i++) {
-			AddColor (diff.ColorsNotInPalette[i]);
+		RBPaletteDiff diff = DiffWithTexture (sourceTexture);
+		for (int i = 0; i < diff.Insertions.Count; i++) {
+			AddColor (diff.Insertions[i]);
 		}
 
-		for (int i = 0; i < diff.ColorsNotInTexture.Count; i++) {
-			int unusedColorIndex = BasePalette.IndexOf (diff.ColorsNotInTexture[i]);
+		// Remove unused colors
+		for (int i = 0; i < diff.Deletions.Count; i++) {
+			int unusedColorIndex = BasePalette.IndexOf (diff.Deletions[i]);
 			RemoveColorAtIndex (unusedColorIndex);
 		}
 
