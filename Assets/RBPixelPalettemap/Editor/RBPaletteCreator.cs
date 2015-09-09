@@ -11,10 +11,10 @@ public static class RBPaletteCreator {
 	{
 		string path = AssetDatabaseUtility.GetDirectoryOfSelection ();
 		string filename = "RBPaletteGroup.asset";
-		string nextAvailableFilename = AssetDatabaseUtility.GetNextUnusedFilename (path, filename);
+		string uniqueAssetPath = AssetDatabase.GenerateUniqueAssetPath (path + filename);
 		RBPaletteGroup createdGroup = null;
 		try {
-			createdGroup = CreatePaletteGroup (path, nextAvailableFilename, false);
+			createdGroup = CreatePaletteGroup (path, Path.GetFileName(uniqueAssetPath), false);
 		} catch (IOException e){
 			throw new IOException ("Failed to create file. Encountered exception: " + e);
 		}
