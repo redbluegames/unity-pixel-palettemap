@@ -15,10 +15,11 @@ public class PaletteMapJob : ScriptableObject
 	public static PaletteMapJob CreatePaletteMapJob ()
 	{
 		PaletteMapJob job = PaletteMapJob.CreateInstance ();
-		string filename = "RBPaletteMapJob.asset";
 		string directory = AssetDatabaseUtility.GetDirectoryOfSelection ();
-		string availableFilename = AssetDatabaseUtility.GetNextUnusedFilename (directory, filename);
-		return (PaletteMapJob) AssetDatabaseUtility.SaveAndSelectObject (job, directory, availableFilename);
+		string filename = "RBPaletteMapJob.asset";
+		string desiredPath = directory + filename;
+		string uniqueAssetPath = AssetDatabase.GenerateUniqueAssetPath (desiredPath);
+		return (PaletteMapJob) AssetDatabaseUtility.SaveAndSelectObject (job, directory, Path.GetFileName(uniqueAssetPath));
 	}
 	
 	public static PaletteMapJob CreateInstance ()
