@@ -2,10 +2,18 @@
 using System.Collections;
 using System.Collections.Generic;
 
+[System.Serializable]
 public class RBPaletteDiff
 {
 	public List<Color> Insertions;
 	public List<Color> Deletions;
+
+	public int NumChanges
+	{
+		get {
+			return Insertions.Count + Deletions.Count;
+		}
+	}
 	
 	public RBPaletteDiff ()
 	{

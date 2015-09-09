@@ -47,7 +47,7 @@ namespace RedBlueTools
 			// Nothing to validate as of right now.
 		}
 
-		public static void CreatePaletteMapAndKey (string outputPath, Texture2D sourceTexture, RBPaletteGroup suppliedPaletteGroup, 
+		public static bool CreatePaletteMapAndKey (string outputPath, Texture2D sourceTexture, RBPaletteGroup suppliedPaletteGroup, 
 		                                           bool overwriteExistingFiles, string paletteKeyFileName, string paletteMapFilename)
 		{
 			// If no palette key texture is provided, create a new one from the source image
@@ -55,6 +55,15 @@ namespace RedBlueTools
 			if (suppliedPaletteGroup == null) {
 				basePalette = RBPalette.CreatePaletteFromTexture (sourceTexture);
 			} else {
+				RBPaletteDiff diff = suppliedPaletteGroup.DiffWithTexture (sourceTexture);
+				if (diff.NumChanges > 0) {
+					if (!EditorUtility.DisplayDialog ("Palettes Differ", 
+						"Current BasePalette is different from the one that would generate from this texture. " +
+						"Are you sure you want to sync this PaletteGroup to this texture?", "OK", "Cancel")) {
+						return false;
+					}
+				}
+
 				// Sync the palette group up with the texture
 				suppliedPaletteGroup.SyncWithTexture (sourceTexture);
 				basePalette = suppliedPaletteGroup.BasePalette;
@@ -82,6 +91,8 @@ namespace RedBlueTools
 			string paletteMapFilenameWithExtension = paletteMapFilename + ".png";
 			string fullPathToPaletteMapFile = outputPath + paletteMapFilenameWithExtension;
 			palettemap.WriteToFile (fullPathToPaletteMapFile, overwriteExistingFiles);
+
+			return true;
 		}
 	
 		class PaletteMap

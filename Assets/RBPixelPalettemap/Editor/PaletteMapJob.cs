@@ -10,6 +10,7 @@ public class PaletteMapJob : ScriptableObject
 	public Texture2D SourceTexture;
 	public RBPaletteGroup PaletteGroup;
 	public bool OverwriteExistingPaletteMap;
+	public RBPaletteDiff CurrentDiff;
 
 	[MenuItem ("Assets/Create/RBPaletteMap/PaletteMapJob")]
 	public static PaletteMapJob CreatePaletteMapJob ()
@@ -18,7 +19,7 @@ public class PaletteMapJob : ScriptableObject
 		string filename = "RBPaletteMapJob.asset";
 		string directory = AssetDatabaseUtility.GetDirectoryOfSelection ();
 		string availableFilename = AssetDatabaseUtility.GetNextUnusedFilename (directory, filename);
-		return (PaletteMapJob) AssetDatabaseUtility.SaveAndSelectObject (job, directory, availableFilename);
+		return (PaletteMapJob)AssetDatabaseUtility.SaveAndSelectObject (job, directory, availableFilename);
 	}
 	
 	public static PaletteMapJob CreateInstance ()
@@ -37,6 +38,11 @@ public class PaletteMapJob : ScriptableObject
 			PaletteGroup = paletteGroup;
 		}
 	}
+
+	public void DiffPaletteGroupWithTexture ()
+	{
+		CurrentDiff = PaletteGroup.DiffWithTexture (SourceTexture);
+	}
 }
 
 #if UNITY_EDITOR
@@ -50,6 +56,10 @@ public class PaletteMapJobEditor : Editor {
 		string path = AssetDatabaseUtility.GetAssetDirectory (target);
 		PaletteMapJob targetJob = (PaletteMapJob) target;
 		bool generationDisabled = targetJob.PaletteGroup == null;
+		
+		if (GUILayout.Button ("Diff PaletteGroup")) {
+			targetJob.DiffPaletteGroupWithTexture ();
+		}
 
 		// Palette Group Button
 		EditorGUI.BeginDisabledGroup (!generationDisabled);
@@ -64,10 +74,13 @@ public class PaletteMapJobEditor : Editor {
 		EditorGUI.BeginDisabledGroup (generationDisabled);
 		if (GUILayout.Button ("Generate PaletteMap")) {
 			try {
-				RBPaletteMapper.CreatePaletteMapAndKey (path, targetJob.SourceTexture, targetJob.PaletteGroup, targetJob.OverwriteExistingPaletteMap, 
-				                                        "Key", targetJob.PaletteMapName);
-				Debug.Log ("<color=green>Palette Map created successfully for job: </color>" + targetJob.name + 
-				           "\n<color=green>Updated PaletteGroup: </color>" + targetJob.PaletteGroup);
+				bool creationComplete = RBPaletteMapper.CreatePaletteMapAndKey (
+					path, targetJob.SourceTexture, targetJob.PaletteGroup, targetJob.OverwriteExistingPaletteMap, 
+				    "Key", targetJob.PaletteMapName);
+				if (creationComplete) {
+					Debug.Log ("<color=green>Palette Map created successfully for job: </color>" + targetJob.name + 
+					           "\n<color=green>Updated PaletteGroup: </color>" + targetJob.PaletteGroup);
+				}
 			} catch (System.Exception e) {
 				Debug.LogError (e, targetJob);
 			}
