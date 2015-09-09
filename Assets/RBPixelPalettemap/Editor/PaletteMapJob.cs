@@ -55,12 +55,15 @@ public class PaletteMapJobEditor : Editor {
 
 		string path = AssetDatabaseUtility.GetAssetDirectory (target);
 		PaletteMapJob targetJob = (PaletteMapJob) target;
-		bool generationDisabled = targetJob.PaletteGroup == null;
-		
+
+		bool disableDiff = targetJob.SourceTexture == null || targetJob.PaletteGroup == null;
+		EditorGUI.BeginDisabledGroup (disableDiff);
 		if (GUILayout.Button ("Diff PaletteGroup")) {
 			targetJob.DiffPaletteGroupWithTexture ();
 		}
+		EditorGUI.EndDisabledGroup ();
 
+		bool generationDisabled = targetJob.PaletteGroup == null;
 		// Palette Group Button
 		EditorGUI.BeginDisabledGroup (!generationDisabled);
 		if (GUILayout.Button ("Create New PaletteGroup from Texture")) {
