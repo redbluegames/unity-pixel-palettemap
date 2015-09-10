@@ -127,7 +127,7 @@ public class RBPaletteGroup : ScriptableObject
 		return diff;
 	}
 
-	public void SyncWithTexture (Texture2D sourceTexture)
+	public void ApplyDiff (RBPaletteDiff diff)
 	{
 		// Unlock the PaletteGroup so that we can edit it.
 		bool wasLocked = Locked;
@@ -136,17 +136,16 @@ public class RBPaletteGroup : ScriptableObject
 		BasePalette.Locked = false;
 
 		// Add new colors to the palette
-		RBPaletteDiff diff = DiffWithTexture (sourceTexture);
 		for (int i = 0; i < diff.Insertions.Count; i++) {
 			AddColor (diff.Insertions[i]);
 		}
-
+		
 		// Remove unused colors
 		for (int i = 0; i < diff.Deletions.Count; i++) {
 			int unusedColorIndex = BasePalette.IndexOf (diff.Deletions[i]);
 			RemoveColorAtIndex (unusedColorIndex);
 		}
-
+		
 		// Relock the palette group
 		Locked = wasLocked;
 		BasePalette.Locked = wasPaletteLocked;

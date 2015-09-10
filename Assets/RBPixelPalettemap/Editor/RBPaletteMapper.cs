@@ -63,9 +63,7 @@ namespace RedBlueTools
 						return false;
 					}
 				}
-
-				// Sync the palette group up with the texture
-				suppliedPaletteGroup.SyncWithTexture (sourceTexture);
+				suppliedPaletteGroup.ApplyDiff (diff);
 				basePalette = suppliedPaletteGroup.BasePalette;
 			}
 
