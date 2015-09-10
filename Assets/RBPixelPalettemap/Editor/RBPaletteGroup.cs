@@ -132,8 +132,6 @@ public class RBPaletteGroup : ScriptableObject
 		// Unlock the PaletteGroup so that we can edit it.
 		bool wasLocked = Locked;
 		Locked = false;
-		bool wasPaletteLocked = BasePalette.Locked;
-		BasePalette.Locked = false;
 
 		// Add new colors to the palette
 		for (int i = 0; i < diff.Insertions.Count; i++) {
@@ -148,7 +146,6 @@ public class RBPaletteGroup : ScriptableObject
 		
 		// Relock the palette group
 		Locked = wasLocked;
-		BasePalette.Locked = wasPaletteLocked;
 	}
 
 	#region Output Functions

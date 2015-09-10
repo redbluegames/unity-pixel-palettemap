@@ -34,7 +34,6 @@ public class PaletteMapJob : ScriptableObject
 		RBPaletteGroup paletteGroup = RBPaletteCreator.ExtractPaletteFromTexture (SourceTexture, AssetDatabaseUtility.GetAssetDirectory (this),
 		                                                                          name + "_PaletteGroup.asset");
 		if (paletteGroup != null) {
-			paletteGroup.BasePalette.Locked = true;
 			paletteGroup.Locked = true;
 			PaletteGroup = paletteGroup;
 		}
