@@ -52,10 +52,20 @@ public class RBPaletteGroup : ScriptableObject
 		paletteGroup.Initialize (groupPaletteName, basePalette);
 		return paletteGroup;
 	}
+	
+	public static RBPaletteGroup CreateInstanceFromTexture (Texture2D sourceTexture, string groupPaletteName = DefaultGroupName)
+	{
+		// Create a base palette from the Texture
+		RBPalette paletteFromTexture = RBPalette.CreatePaletteFromTexture (sourceTexture);
+		paletteFromTexture.PaletteName = "Base Palette";
+		// Create the paletteGroup with the base Palette
+		RBPaletteGroup paletteGroup = RBPaletteGroup.CreateInstance (groupPaletteName, paletteFromTexture);
+		return paletteGroup;
+	}
 
 	public static RBPaletteGroup CreateInstanceFromPaletteTexture (Texture2D paletteTexture, string groupPaletteName = DefaultGroupName)
 	{
-		RBPalette[] palettesInTexture = PaletteTextureToRBPalettes (paletteTexture);
+		RBPalette[] palettesInTexture = ExtractRBPalettesFromPaletteTexture (paletteTexture);
 		// Create the paletteGroup with the base Palette
 		RBPaletteGroup paletteGroup = CreateInstance (groupPaletteName, palettesInTexture [0]);
 		for (int i = 1; i < palettesInTexture.Length; i++) {
@@ -223,8 +233,8 @@ public class RBPaletteGroup : ScriptableObject
 		}
 		return colorsAsArray;
 	}
-	
-	static RBPalette[] PaletteTextureToRBPalettes (Texture2D paletteTexture)
+
+	static RBPalette[] ExtractRBPalettesFromPaletteTexture (Texture2D paletteTexture)
 	{
 		Color[] sourcePixels = paletteTexture.GetPixels ();
 		int numPalettes = paletteTexture.height;

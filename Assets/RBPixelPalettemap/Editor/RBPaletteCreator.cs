@@ -6,7 +6,7 @@ public static class RBPaletteCreator {
 
 	const string suffix = "_PaletteGroup";
 
-	[MenuItem ("Assets/Create/RBPaletteMap/RBPalette")]
+	[MenuItem ("Assets/Create/RBPaletteGroup/RBPalette")]
 	static RBPaletteGroup CreatePaletteGroup ()
 	{
 		string path = AssetDatabaseUtility.GetDirectoryOfSelection ();
@@ -30,7 +30,6 @@ public static class RBPaletteCreator {
 	public static RBPaletteGroup CreatePaletteGroup (string path, string filename, bool overwriteExisting)
 	{
 		ValidateSaveLocation (path + filename, overwriteExisting);
-
 		RBPaletteGroup paletteAsset = RBPaletteGroup.CreateInstance ();
 		return (RBPaletteGroup) AssetDatabaseUtility.SaveObject (paletteAsset, path, filename);
 	}
@@ -38,23 +37,14 @@ public static class RBPaletteCreator {
 	public static RBPaletteGroup CreatePaletteGroupFromTexture (string path, string filename, Texture2D sourceTexture, bool overwriteExisting)
 	{
 		ValidateSaveLocation (path + filename, overwriteExisting);
-		
-		// Create a base palette from the Texture
-		RBPalette paletteFromTexture = RBPalette.CreatePaletteFromTexture (sourceTexture);
-		paletteFromTexture.PaletteName = "Base Palette";
-		
-		// Create the paletteGroup with the base Palette
-		RBPaletteGroup paletteGroup = RBPaletteGroup.CreateInstance (sourceTexture.name + suffix, paletteFromTexture);
-		
+		RBPaletteGroup paletteGroup = RBPaletteGroup.CreateInstanceFromTexture (sourceTexture, sourceTexture.name + suffix);
 		return (RBPaletteGroup) AssetDatabaseUtility.SaveObject (paletteGroup, path, filename);
 	}
 	
 	public static RBPaletteGroup CreatePaletteGroupFromPaletteTexture (string path, string filename, Texture2D sourceTexture, bool overwriteExisting)
 	{
 		ValidateSaveLocation (path + filename, overwriteExisting);
-
 		RBPaletteGroup paletteGroup = RBPaletteGroup.CreateInstanceFromPaletteTexture (sourceTexture, sourceTexture.name + suffix);
-		
 		return (RBPaletteGroup) AssetDatabaseUtility.SaveObject (paletteGroup, path, filename);
 	}
 	
@@ -65,7 +55,7 @@ public static class RBPaletteCreator {
 		}
 	} 
 	
-	[MenuItem ("Assets/RBPaletteMap/ExtractPalette")]
+	[MenuItem ("Assets/RBPaletteGroup/Extract Palette from Texture")]
 	public static RBPaletteGroup ExtractPaletteFromSelection ()
 	{
 		Texture2D selectedTexture = (Texture2D) Selection.activeObject;
@@ -96,9 +86,22 @@ public static class RBPaletteCreator {
 
 		return createdGroup;
 	}
+
+	[MenuItem ("Assets/RBPaletteGroup/Extract Palette from Texture", true)]
+	static bool ValidateExtractPalette ()
+	{
+		if (!IsSelectionValidTexture ()) {
+			return false;
+		}
+		
+		// TODO: Could support multi-texture palette group extraction
+		if (Selection.objects.Length > 1) {
+			return false;
+		}
+		return true;
+	}
 	
-	
-	[MenuItem ("Assets/RBPaletteMap/Palette To Palette Group")]
+	[MenuItem ("Assets/RBPaletteGroup/Create PaletteGroup from Palette")]
 	public static RBPaletteGroup ExtractPaletteGroupFromPaletteTexture ()
 	{
 		Texture2D selectedTexture = (Texture2D) Selection.activeObject;
@@ -110,7 +113,7 @@ public static class RBPaletteCreator {
 		return extractedPaletteGroup;
 	}
 
-	public static RBPaletteGroup ExtractPaletteGroupFromPaletteTexture (Texture2D extractTexture, string savePath, string filename = "")
+	static RBPaletteGroup ExtractPaletteGroupFromPaletteTexture (Texture2D extractTexture, string savePath, string filename = "")
 	{
 		if (string.IsNullOrEmpty (filename)) {
 			filename = extractTexture.name + suffix + ".asset";
@@ -129,22 +132,20 @@ public static class RBPaletteCreator {
 		
 		return createdGroup;
 	}
-
 	
-	[MenuItem ("Assets/RBPaletteMap/ExtractPalette", true)]
-	static bool IsSelectionValidTargetForPalette ()
+	[MenuItem ("Assets/RBPaletteGroup/Create PaletteGroup from Palette", true)]
+	static bool ValidatePaletteToPaletteGroup ()
 	{
 		if (!IsSelectionValidTexture ()) {
 			return false;
 		}
 
-		// TODO: Support multi-texture palette group extraction
 		if (Selection.objects.Length > 1) {
 			return false;
 		}
 		return true;
 	}
-	
+
 	static bool IsSelectionValidTexture ()
 	{
 		if (Selection.activeObject == null) {
