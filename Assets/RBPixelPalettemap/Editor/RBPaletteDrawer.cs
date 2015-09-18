@@ -24,7 +24,7 @@ public class RBPaletteDrawer : PropertyDrawer
 
 	float GetElementHeight ()
 	{
-		return EditorGUIUtility.singleLineHeight + elementPadding;
+		return EditorGUIUtility.singleLineHeight + 2.0f * elementPadding;
 	}
 	
 	void DrawListElement (Rect rect, int index, bool isActive, bool isFocused)

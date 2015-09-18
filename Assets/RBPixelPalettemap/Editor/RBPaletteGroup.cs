@@ -14,7 +14,8 @@ public class RBPaletteGroup : ScriptableObject
 	List<RBPalette>
 		palettes;
 	[SerializeField]
-	List<Color> colors;
+	List<Color>
+		colors;
 
 	public RBPalette BasePalette { 
 		get {
@@ -52,6 +53,17 @@ public class RBPaletteGroup : ScriptableObject
 		return paletteGroup;
 	}
 
+	public static RBPaletteGroup CreateInstanceFromPaletteTexture (Texture2D paletteTexture, string groupPaletteName = DefaultGroupName)
+	{
+		RBPalette[] palettesInTexture = PaletteTextureToRBPalettes (paletteTexture);
+		// Create the paletteGroup with the base Palette
+		RBPaletteGroup paletteGroup = CreateInstance (groupPaletteName, palettesInTexture [0]);
+		for (int i = 1; i < palettesInTexture.Length; i++) {
+			paletteGroup.AddPalette (palettesInTexture [i]);
+		}
+		return paletteGroup;
+	}
+
 	public void Initialize (string groupPaletteName = DefaultGroupName, RBPalette basePalette = null)
 	{
 		palettes = new List<RBPalette> ();
@@ -73,8 +85,12 @@ public class RBPaletteGroup : ScriptableObject
 	{
 		RBPalette newPalette = new RBPalette (BasePalette);
 		newPalette.PaletteName = "Unnamed";
-
-		palettes.Add (newPalette);
+		AddPalette (newPalette);
+	}
+	
+	public void AddPalette (RBPalette paletteToAdd)
+	{
+		palettes.Add (paletteToAdd);
 	}
 
 	public void AddColor (Color colorToAdd)
@@ -135,12 +151,12 @@ public class RBPaletteGroup : ScriptableObject
 
 		// Add new colors to the palette
 		for (int i = 0; i < diff.Insertions.Count; i++) {
-			AddColor (diff.Insertions[i]);
+			AddColor (diff.Insertions [i]);
 		}
 		
 		// Remove unused colors
 		for (int i = 0; i < diff.Deletions.Count; i++) {
-			int unusedColorIndex = BasePalette.IndexOf (diff.Deletions[i]);
+			int unusedColorIndex = BasePalette.IndexOf (diff.Deletions [i]);
 			RemoveColorAtIndex (unusedColorIndex);
 		}
 		
@@ -206,6 +222,24 @@ public class RBPaletteGroup : ScriptableObject
 			}
 		}
 		return colorsAsArray;
+	}
+	
+	static RBPalette[] PaletteTextureToRBPalettes (Texture2D paletteTexture)
+	{
+		Color[] sourcePixels = paletteTexture.GetPixels ();
+		int numPalettes = paletteTexture.height;
+		int numColors = paletteTexture.width;
+		RBPalette[] palettes = new RBPalette[numPalettes];
+		for (int i = 0; i < palettes.Length; i++) {
+			palettes [i] = new RBPalette ("Palette" + i);
+			// Add all colors to the palette
+			for (int color = 0; color < numColors; color++) {
+				int colorIndex = i * paletteTexture.width + color;
+				palettes [i].AddColor (sourcePixels [colorIndex]);
+			}
+		}
+		
+		return palettes;
 	}
 	#endregion
 }
