@@ -15,7 +15,6 @@ public class RBPaletteGroup : ScriptableObject
 		palettes;
 	[SerializeField]
 	List<Color> colors;
-	public RBPalette publicPalette;
 
 	public RBPalette BasePalette { 
 		get {

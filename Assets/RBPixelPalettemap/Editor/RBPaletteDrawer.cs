@@ -9,6 +9,12 @@ public class RBPaletteDrawer : PropertyDrawer
 {
 	ReorderableList colorList;
 	string listPropertyName = "ColorsInPalette";
+	#region Sizing
+	float elementPadding = 5.0f;
+	float elementSpacing = 5.0f;
+	float minLabelWidth = 100.0f;
+	float preferredLabelWeight = 0.4f;
+	#endregion
 
 	public override float GetPropertyHeight (SerializedProperty property, GUIContent label)
 	{
@@ -18,22 +24,30 @@ public class RBPaletteDrawer : PropertyDrawer
 
 	float GetElementHeight ()
 	{
-		return EditorGUIUtility.singleLineHeight;
+		return EditorGUIUtility.singleLineHeight + elementPadding;
 	}
 	
 	void DrawListElement (Rect rect, int index, bool isActive, bool isFocused)
 	{
+		rect.y += elementPadding;
+		
+		// Draw label
+		float labelWidth = Mathf.Max (rect.width * preferredLabelWeight, minLabelWidth);
+		Rect labelRect = new Rect (rect.x, rect.y, labelWidth, EditorGUIUtility.singleLineHeight);
+		EditorGUI.TextField (labelRect, "Color" + index);
+
+		float remainingWidth = rect.width - (labelRect.width + elementSpacing);
+		List<SerializedProperty> colorProperties = GetListFromSerializedProperty (colorList.serializedProperty);
+		Rect colorRect = new Rect (rect.x + labelRect.width + elementSpacing, rect.y, 
+		                           remainingWidth, EditorGUIUtility.singleLineHeight);
+		colorProperties[index].colorValue = EditorGUI.ColorField (colorRect, colorProperties[index].colorValue);
 	}
 	
 	public override void OnGUI (Rect position, SerializedProperty property, GUIContent label)
 	{
 		var listProperty = property.FindPropertyRelative (listPropertyName);
 		var renderedList = BuildReorderableColorList (listProperty);
-		var height = 0f;
-		float spacing = 1.5f;
-		for (int i = 0; i < listProperty.arraySize; i++)
-			height = Mathf.Max(height, EditorGUI.GetPropertyHeight(listProperty.GetArrayElementAtIndex(i))) + spacing;
-		renderedList.elementHeight = height;
+		renderedList.elementHeight = GetElementHeight ();
 		
 		renderedList.DoList (position);
 	}
@@ -51,7 +65,7 @@ public class RBPaletteDrawer : PropertyDrawer
 		SerializedObject objectForProperty = property.serializedObject;
 		colorList = new ReorderableList(objectForProperty, property, 
 		                           true, true, true, true);
-		//colorList.drawElementCallback = DrawListElement;
+		colorList.drawElementCallback = DrawListElement;
 
 		return colorList;
 	}
