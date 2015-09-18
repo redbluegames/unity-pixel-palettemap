@@ -8,7 +8,21 @@ public class RBPalette
 {
 	public string PaletteName;
 	[SerializeField]
-	List<Color> ColorsInPalette;
+	List<RBPaletteColor> ColorsInPalette;
+	string defaultColorName = "Color";
+
+	[System.Serializable]
+	class RBPaletteColor
+	{
+		public Color Color;
+		public string Name;
+
+		public RBPaletteColor (Color color, string name)
+		{
+			this.Color = color;
+			this.Name = name;
+		}
+	}
 
 	public Color this [int index] {
 		get {
@@ -27,12 +41,12 @@ public class RBPalette
 
 	Color GetColor (int index)
 	{
-		return ColorsInPalette [index];
+		return ColorsInPalette [index].Color;
 	}
 
 	void SetColor (int index, Color color)
 	{
-		ColorsInPalette [index] = color;
+		ColorsInPalette [index].Color = color;
 	}
 	
 	public RBPalette () : this ("RBPalette")
@@ -42,19 +56,19 @@ public class RBPalette
 	public RBPalette (string paletteName)
 	{
 		this.PaletteName = paletteName;
-		this.ColorsInPalette = new List<Color> ();
+		this.ColorsInPalette = new List<RBPaletteColor> ();
 	}
 
 	public RBPalette (RBPalette paletteToCopy)
 	{
 		this.PaletteName = paletteToCopy.PaletteName;
-		this.ColorsInPalette = new List<Color> ();
+		this.ColorsInPalette = new List<RBPaletteColor> ();
 		this.ColorsInPalette.AddRange (paletteToCopy.ColorsInPalette);
 	}
 
 	public void AddColor (Color color)
 	{
-		ColorsInPalette.Add (color);
+		ColorsInPalette.Add (new RBPaletteColor (color, defaultColorName + ColorsInPalette.Count));
 	}
 
 	public void RemoveColorAtIndex (int index)
@@ -72,8 +86,8 @@ public class RBPalette
 		int index = -1;
 		for (int i = 0; i < ColorsInPalette.Count; i++) {
 			bool colorToFindIsZeroAlpha = Mathf.Approximately (colorToFind.a, 0.0f);
-			bool currentColorIsZeroAlpha = Mathf.Approximately (ColorsInPalette [i].a, 0.0f);
-			if ((colorToFindIsZeroAlpha && currentColorIsZeroAlpha) || ColorsInPalette [i] == colorToFind) {
+			bool currentColorIsZeroAlpha = Mathf.Approximately (ColorsInPalette [i].Color.a, 0.0f);
+			if ((colorToFindIsZeroAlpha && currentColorIsZeroAlpha) || ColorsInPalette [i].Color == colorToFind) {
 				index = i;
 				break;
 			}
@@ -120,7 +134,7 @@ public class RBPalette
 		fullString += "[RBPalette: Name=" + PaletteName  + " Count=" + Count + " Colors=";
 		for (int i =0; i < Count; i++) {
 			string colorString = "{";
-			colorString += (Color32) ColorsInPalette[i];
+			colorString += (Color32) ColorsInPalette[i].Color;
 			colorString += "}";
 			fullString += colorString;
 		}

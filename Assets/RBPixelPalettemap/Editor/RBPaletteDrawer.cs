@@ -19,7 +19,7 @@ public class RBPaletteDrawer : PropertyDrawer
 	public override float GetPropertyHeight (SerializedProperty property, GUIContent label)
 	{
 		var listProperty = property.FindPropertyRelative (listPropertyName);
-		return BuildReorderableColorList (listProperty).GetHeight();
+		return BuildReorderableColorList (listProperty).GetHeight ();
 	}
 
 	float GetElementHeight ()
@@ -29,18 +29,20 @@ public class RBPaletteDrawer : PropertyDrawer
 	
 	void DrawListElement (Rect rect, int index, bool isActive, bool isFocused)
 	{
+		var element = colorList.serializedProperty.GetArrayElementAtIndex (index);
 		rect.y += elementPadding;
 		
 		// Draw label
+		SerializedProperty nameProperty = element.FindPropertyRelative ("Name");
 		float labelWidth = Mathf.Max (rect.width * preferredLabelWeight, minLabelWidth);
 		Rect labelRect = new Rect (rect.x, rect.y, labelWidth, EditorGUIUtility.singleLineHeight);
-		EditorGUI.TextField (labelRect, "Color" + index);
+		nameProperty.stringValue = EditorGUI.TextField (labelRect, nameProperty.stringValue);
 
 		float remainingWidth = rect.width - (labelRect.width + elementSpacing);
-		List<SerializedProperty> colorProperties = GetListFromSerializedProperty (colorList.serializedProperty);
+		SerializedProperty colorProperty = element.FindPropertyRelative ("Color");
 		Rect colorRect = new Rect (rect.x + labelRect.width + elementSpacing, rect.y, 
 		                           remainingWidth, EditorGUIUtility.singleLineHeight);
-		colorProperties[index].colorValue = EditorGUI.ColorField (colorRect, colorProperties[index].colorValue);
+		colorProperty.colorValue = EditorGUI.ColorField (colorRect, colorProperty.colorValue);
 	}
 	
 	public override void OnGUI (Rect position, SerializedProperty property, GUIContent label)
@@ -63,7 +65,7 @@ public class RBPaletteDrawer : PropertyDrawer
 		}
 
 		SerializedObject objectForProperty = property.serializedObject;
-		colorList = new ReorderableList(objectForProperty, property, 
+		colorList = new ReorderableList (objectForProperty, property, 
 		                           true, true, true, true);
 		colorList.drawElementCallback = DrawListElement;
 
