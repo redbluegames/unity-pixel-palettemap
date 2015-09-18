@@ -97,14 +97,15 @@ public class RBPaletteGroupEditor : Editor {
 		// Draw colors
 		SerializedProperty colorsAsList = element.FindPropertyRelative ("ColorsInPalette");
 		int numColorsPerLine = GetMaxNumColorsPerLine ();
-		List<SerializedProperty> colorProperties = GetListFromSerializedProperty (colorsAsList);
-		for (int i = 0; i < colorProperties.Count; i++) {
+		List<SerializedProperty> rbColorProperties = GetListFromSerializedProperty (colorsAsList);
+		for (int i = 0; i < rbColorProperties.Count; i++) {
 			int colorIndexOnLine = i % numColorsPerLine;
 			float startX = labelRect.width + colorPaddingX + colorIndexOnLine * (colorWidth + colorSpacing);
 			float startY = Mathf.FloorToInt (i / numColorsPerLine) * EditorGUIUtility.singleLineHeight;
 			Rect colorRect = new Rect (rect.x + startX, rect.y + startY, 
 			                           colorWidth, EditorGUIUtility.singleLineHeight);
-			colorProperties[i].colorValue = EditorGUI.ColorField (colorRect, colorProperties[i].colorValue);
+			SerializedProperty colorProperty = rbColorProperties[i].FindPropertyRelative ("Color");
+			colorProperty.colorValue = EditorGUI.ColorField (colorRect, colorProperty.colorValue);
 
 			//EditorGUIUtility.DrawColorSwatch (colorRect, colorProperties[i].colorValue);
 		}

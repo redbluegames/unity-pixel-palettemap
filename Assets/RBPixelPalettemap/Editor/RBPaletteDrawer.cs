@@ -42,7 +42,8 @@ public class RBPaletteDrawer : PropertyDrawer
 		SerializedProperty colorProperty = element.FindPropertyRelative ("Color");
 		Rect colorRect = new Rect (rect.x + labelRect.width + elementSpacing, rect.y, 
 		                           remainingWidth, EditorGUIUtility.singleLineHeight);
-		colorProperty.colorValue = EditorGUI.ColorField (colorRect, colorProperty.colorValue);
+		GUIContent colorGUIContent = new GUIContent (string.Empty, nameProperty.stringValue);
+		colorProperty.colorValue = EditorGUI.ColorField (colorRect, colorGUIContent, colorProperty.colorValue);
 	}
 	
 	public override void OnGUI (Rect position, SerializedProperty property, GUIContent label)
@@ -68,7 +69,9 @@ public class RBPaletteDrawer : PropertyDrawer
 		colorList = new ReorderableList (objectForProperty, property, 
 		                           true, true, true, true);
 		colorList.drawElementCallback = DrawListElement;
-
+		colorList.drawHeaderCallback = (Rect rect) => {  
+			EditorGUI.LabelField(rect, property.displayName);
+		};
 		return colorList;
 	}
 	
