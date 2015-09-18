@@ -19,7 +19,12 @@ public class RBPaletteDrawer : PropertyDrawer
 	public override float GetPropertyHeight (SerializedProperty property, GUIContent label)
 	{
 		var listProperty = property.FindPropertyRelative (listPropertyName);
-		return BuildReorderableColorList (listProperty).GetHeight ();
+		// WORKAROUND: Get my own height instead of using ReorderableList.GetHeight () 
+		// because it doesn't calculate correctly on first frame
+		float height = Mathf.Max (listProperty.arraySize, 1) * GetElementHeight ();
+		float headerHeight = 20.0f;
+		float addMinusHeight = 20.0f;
+		return height + addMinusHeight + headerHeight;
 	}
 
 	float GetElementHeight ()
@@ -69,8 +74,9 @@ public class RBPaletteDrawer : PropertyDrawer
 		colorList = new ReorderableList (objectForProperty, property, 
 		                           true, true, true, true);
 		colorList.drawElementCallback = DrawListElement;
-		colorList.drawHeaderCallback = (Rect rect) => {  
-			EditorGUI.LabelField(rect, property.displayName);
+		colorList.drawHeaderCallback = (Rect rect) => { 
+			string parentPropertyName =  property.propertyPath.Split ('.')[0];
+			EditorGUI.LabelField(rect, parentPropertyName);
 		};
 		return colorList;
 	}

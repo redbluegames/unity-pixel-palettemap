@@ -4,6 +4,6 @@ using System.Collections.Generic;
 
 public class ScriptWIthRBPalette : MonoBehaviour {
 
-	public RBPalette ColorPalette;
+	public RBPalette AnRBPalette;
 	public List<Color> ColorList;
 }
