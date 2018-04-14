@@ -121,9 +121,9 @@ namespace RedBlueTools
 					if (basePalette.Count == 1) {
 						alpha = 0.0f;
 					} else {
-						alpha = paletteIndex / (float)(basePalette.Count - 1);
+						alpha = (paletteIndex + 0.5f) / (float)basePalette.Count;
 						// For some reason, 1.0f wraps around in the shader. Maybe it's epsilon issues.
-						alpha = Mathf.Clamp (alpha, 0.0f, 0.99f);
+						alpha = Mathf.Clamp (alpha, 0.0f, 0.999f);
 					}
 					pixels [i] = new Color (0.0f, 0.0f, 0.0f, alpha);
 				}
